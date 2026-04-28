@@ -7,7 +7,7 @@ import { Navbar } from "@/components/navbar";
 
 export default function HomePage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 text-white">
+    <div className="relative min-h-screen overflow-hidden bg-transparent text-slate-950">
       <Navbar />
       <main>
         <HeroSection />

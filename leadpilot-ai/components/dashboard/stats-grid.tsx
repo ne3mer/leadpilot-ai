@@ -12,13 +12,13 @@ export function StatsGrid() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: index * 0.08 }}
-          className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur"
+          className="rounded-2xl border border-black/10 bg-white p-5"
         >
-          <p className="text-sm text-slate-300">{stat.label}</p>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-white">
+          <p className="text-sm text-slate-600">{stat.label}</p>
+          <p className="mt-3 text-3xl font-semibold tracking-tight text-black">
             {stat.value}
           </p>
-          <p className="mt-2 text-sm text-emerald-300">{stat.delta} this month</p>
+          <p className="mt-2 text-sm text-emerald-700">{stat.delta} this month</p>
         </motion.article>
       ))}
     </section>
