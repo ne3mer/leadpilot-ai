@@ -1,4 +1,5 @@
 import { leadsData } from "@/lib/mock-data";
+import { Card } from "@/components/ui/card";
 
 const statusClasses: Record<string, string> = {
   Qualified: "bg-emerald-100 text-emerald-800",
@@ -8,9 +9,9 @@ const statusClasses: Record<string, string> = {
   New: "bg-zinc-100 text-zinc-700",
 };
 
-export function LeadsTable() {
+export function DashboardLeadsTable() {
   return (
-    <section className="rounded-2xl border border-black/10 bg-white p-5">
+    <Card className="p-5">
       <h2 className="text-lg font-medium text-black">Lead Pipeline</h2>
       <div className="mt-4 overflow-x-auto">
         <table className="min-w-full text-left text-sm text-slate-700">
@@ -28,9 +29,7 @@ export function LeadsTable() {
                 <td className="px-3 py-3 text-slate-600">{lead.email}</td>
                 <td className="px-3 py-3">
                   <span
-                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                      statusClasses[lead.status]
-                    }`}
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusClasses[lead.status]}`}
                   >
                     {lead.status}
                   </span>
@@ -40,6 +39,6 @@ export function LeadsTable() {
           </tbody>
         </table>
       </div>
-    </section>
+    </Card>
   );
 }

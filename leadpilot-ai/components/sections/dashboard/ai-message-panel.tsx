@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 const templates = [
   "Hi {{name}}, we noticed your team is scaling outbound efforts. Want to see how LeadPilot AI can increase your conversion rate by 30% this quarter?",
@@ -9,7 +10,7 @@ const templates = [
   "Hi {{name}}, we helped teams like yours reduce response time and close deals faster. I can share a personalized workflow if helpful.",
 ];
 
-export function AIMessageGenerator() {
+export function DashboardAiMessagePanel() {
   const [leadName, setLeadName] = useState("Sophia");
   const [tone, setTone] = useState("Professional");
   const [templateIndex, setTemplateIndex] = useState(0);
@@ -29,7 +30,7 @@ export function AIMessageGenerator() {
   }
 
   return (
-    <section className="rounded-2xl border border-black/10 bg-white p-5">
+    <Card className="p-5">
       <div className="flex items-center gap-2">
         <Sparkles className="h-5 w-5 text-emerald-700" />
         <h2 className="text-lg font-medium text-black">AI Message Generator</h2>
@@ -66,13 +67,11 @@ export function AIMessageGenerator() {
 
       <button
         type="button"
-        onClick={() =>
-          setTemplateIndex((prev) => (prev + 1) % templates.length)
-        }
-        className="mt-4 rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+        onClick={() => setTemplateIndex((prev) => (prev + 1) % templates.length)}
+        className="mt-4 rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white transition duration-300 hover:bg-emerald-700"
       >
         Generate Another Message
       </button>
-    </section>
+    </Card>
   );
 }

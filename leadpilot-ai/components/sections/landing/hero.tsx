@@ -3,14 +3,16 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Container } from "@/components/ui/container";
 
-export function HeroSection() {
+export function LandingHeroSection() {
   return (
-    <section className="relative overflow-hidden px-6 pb-20 pt-24 lg:px-8 lg:pt-28">
+    <section className="relative overflow-hidden pb-20 pt-24 lg:pt-28">
       <div className="pointer-events-none absolute -top-56 left-1/2 h-[30rem] w-[30rem] -translate-x-1/2 rounded-full bg-emerald-500/25 blur-[120px]" />
       <div className="pointer-events-none absolute right-[-8rem] top-14 h-72 w-72 rounded-full bg-black/10 blur-[90px]" />
 
-      <div className="mx-auto max-w-5xl text-center">
+      <Container className="max-w-5xl text-center">
         <motion.p
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
@@ -45,21 +47,17 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 0.24 }}
           className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 px-7 py-3.5 text-sm font-semibold text-white shadow-[0_12px_28px_-12px_rgba(22,163,74,0.7)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_34px_-14px_rgba(22,163,74,0.75)]"
-          >
-            Start Free Demo
-            <ArrowRight className="h-4 w-4" />
+          <Link href="/login">
+            <Button>
+              Start Free Demo
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </Link>
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center rounded-full border border-black/15 bg-white/90 px-7 py-3.5 text-sm font-semibold text-black transition duration-300 hover:-translate-y-0.5 hover:border-emerald-500 hover:text-emerald-700"
-          >
-            View Dashboard
+          <Link href="/dashboard">
+            <Button variant="secondary">View Dashboard</Button>
           </Link>
         </motion.div>
-      </div>
+      </Container>
     </section>
   );
 }

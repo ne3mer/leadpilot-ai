@@ -10,10 +10,11 @@ import {
   YAxis,
 } from "recharts";
 import { pipelineData } from "@/lib/mock-data";
+import { Card } from "@/components/ui/card";
 
-export function PerformanceChart() {
+export function DashboardPerformanceChart() {
   return (
-    <section className="rounded-2xl border border-black/10 bg-white p-5">
+    <Card className="p-5">
       <h2 className="text-lg font-medium text-black">Lead Performance Trend</h2>
       <p className="mt-1 text-sm text-slate-600">
         Monthly leads and conversions powered by AI workflows.
@@ -32,13 +33,7 @@ export function PerformanceChart() {
                 borderRadius: "12px",
               }}
             />
-            <Line
-              type="monotone"
-              dataKey="leads"
-              stroke="#111827"
-              strokeWidth={3}
-              dot={false}
-            />
+            <Line type="monotone" dataKey="leads" stroke="#111827" strokeWidth={3} dot={false} />
             <Line
               type="monotone"
               dataKey="conversions"
@@ -49,6 +44,6 @@ export function PerformanceChart() {
           </LineChart>
         </ResponsiveContainer>
       </div>
-    </section>
+    </Card>
   );
 }

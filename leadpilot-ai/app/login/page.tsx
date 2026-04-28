@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Lock } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 export default function LoginPage() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-transparent px-6">
       <div className="pointer-events-none absolute left-1/2 top-1/2 h-[24rem] w-[24rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-3xl" />
 
-      <div className="relative w-full max-w-md rounded-2xl border border-black/10 bg-white p-8">
+      <Card className="relative w-full max-w-md p-8">
         <div className="mb-6 flex items-center gap-2 text-emerald-700">
           <Lock className="h-4 w-4" />
           <p className="text-xs uppercase tracking-[0.16em]">Secure Access</p>
@@ -38,19 +39,16 @@ export default function LoginPage() {
 
           <button
             type="button"
-            className="mt-3 w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            className="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_28px_-12px_rgba(22,163,74,0.7)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_34px_-14px_rgba(22,163,74,0.75)]"
           >
             Continue
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-500">
-          Back to{" "}
-          <Link href="/" className="text-black hover:text-emerald-700">
-            homepage
-          </Link>
+          Back to <Link href="/" className="text-black hover:text-emerald-700">homepage</Link>
         </p>
-      </div>
+      </Card>
     </div>
   );
 }
