@@ -102,26 +102,31 @@ export const pipelineData = [
 export const leadsData: Omit<Lead, "id">[] = [
   {
     name: "Sophia Martinez",
+    company: "Northstar",
     email: "sophia@northstar.io",
     status: "Qualified",
   },
   {
     name: "Liam Carter",
+    company: "Skyline HQ",
     email: "liam@skylinehq.com",
     status: "Contacted",
   },
   {
     name: "Olivia Nguyen",
+    company: "FuturePath",
     email: "olivia@futurepath.ai",
     status: "Proposal Sent",
   },
   {
     name: "Noah Bennett",
+    company: "PulseGrid",
     email: "noah@pulsegrid.com",
     status: "Negotiation",
   },
   {
     name: "Ava Robinson",
+    company: "HarborWorks",
     email: "ava@harborworks.co",
     status: "New",
   },

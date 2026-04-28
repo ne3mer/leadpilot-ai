@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Trash2, UserPlus } from "lucide-react";
+import { Trash2, UserPlus, WandSparkles } from "lucide-react";
 import { leadsData } from "@/lib/mock-data";
 import { Card } from "@/components/ui/card";
 import { leadStatuses, type Lead, type LeadStatus } from "@/lib/lead-types";
 
 const LEADS_STORAGE_KEY = "leadpilot.dashboard.leads";
+
+type DashboardLeadsTableProps = {
+  onUseLead?: (lead: Lead) => void;
+};
 
 const statusClasses: Record<LeadStatus, string> = {
   New: "bg-zinc-100 text-zinc-700",
@@ -22,6 +26,12 @@ function createLeadId() {
   }
 
   return `lead-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+}
+
+function companyFromEmail(email: string) {
+  const domain = email.split("@")[1] ?? "Company";
+  const base = domain.split(".")[0] ?? "Company";
+  return base.charAt(0).toUpperCase() + base.slice(1);
 }
 
 function getInitialLeads(): Lead[] {
@@ -42,28 +52,41 @@ function getStoredLeads(): Lead[] {
       return getInitialLeads();
     }
 
-    const parsed = JSON.parse(storedLeads) as Lead[];
+    const parsed = JSON.parse(storedLeads) as Partial<Lead>[];
     if (!Array.isArray(parsed)) {
       return getInitialLeads();
     }
 
-    const sanitized = parsed.filter(
-      (lead) =>
-        typeof lead.id === "string" &&
-        typeof lead.name === "string" &&
-        typeof lead.email === "string" &&
-        leadStatuses.includes(lead.status)
-    );
+    const sanitized = parsed
+      .filter(
+        (lead) =>
+          typeof lead.id === "string" &&
+          typeof lead.name === "string" &&
+          typeof lead.email === "string" &&
+          typeof lead.status === "string" &&
+          leadStatuses.includes(lead.status as LeadStatus)
+      )
+      .map((lead) => ({
+        id: lead.id as string,
+        name: lead.name as string,
+        email: lead.email as string,
+        status: lead.status as LeadStatus,
+        company:
+          typeof lead.company === "string" && lead.company.trim().length > 0
+            ? lead.company
+            : companyFromEmail(lead.email as string),
+      }));
 
-    return sanitized;
+    return sanitized.length > 0 ? sanitized : getInitialLeads();
   } catch {
     return getInitialLeads();
   }
 }
 
-export function DashboardLeadsTable() {
+export function DashboardLeadsTable({ onUseLead }: DashboardLeadsTableProps) {
   const [leads, setLeads] = useState<Lead[]>(() => getStoredLeads());
   const [name, setName] = useState("");
+  const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<LeadStatus>("New");
 
@@ -76,7 +99,11 @@ export function DashboardLeadsTable() {
     [email, leads]
   );
 
-  const isFormValid = name.trim().length > 1 && email.trim().includes("@") && !hasDuplicateEmail;
+  const isFormValid =
+    name.trim().length > 1 &&
+    company.trim().length > 1 &&
+    email.trim().includes("@") &&
+    !hasDuplicateEmail;
 
   function handleAddLead() {
     if (!isFormValid) {
@@ -87,6 +114,7 @@ export function DashboardLeadsTable() {
       {
         id: createLeadId(),
         name: name.trim(),
+        company: company.trim(),
         email: email.trim().toLowerCase(),
         status,
       },
@@ -94,6 +122,7 @@ export function DashboardLeadsTable() {
     ]);
 
     setName("");
+    setCompany("");
     setEmail("");
     setStatus("New");
   }
@@ -124,13 +153,23 @@ export function DashboardLeadsTable() {
         </span>
       </div>
 
-      <div className="mt-4 grid gap-3 rounded-2xl border border-black/10 bg-slate-50 p-4 md:grid-cols-4">
+      <div className="mt-4 grid gap-3 rounded-2xl border border-black/10 bg-slate-50 p-4 md:grid-cols-5">
         <label className="text-sm text-slate-700 md:col-span-1">
           Name
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Lead name"
+            className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
+          />
+        </label>
+
+        <label className="text-sm text-slate-700 md:col-span-1">
+          Company
+          <input
+            value={company}
+            onChange={(event) => setCompany(event.target.value)}
+            placeholder="Company"
             className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
           />
         </label>
@@ -183,6 +222,7 @@ export function DashboardLeadsTable() {
           <thead className="text-xs uppercase tracking-wide text-slate-500">
             <tr>
               <th className="px-3 py-3">Name</th>
+              <th className="px-3 py-3">Company</th>
               <th className="px-3 py-3">Email</th>
               <th className="px-3 py-3">Status</th>
               <th className="px-3 py-3 text-right">Action</th>
@@ -192,6 +232,7 @@ export function DashboardLeadsTable() {
             {leads.map((lead) => (
               <tr key={lead.id} className="border-t border-black/10">
                 <td className="px-3 py-3 font-medium text-black">{lead.name}</td>
+                <td className="px-3 py-3 text-slate-600">{lead.company}</td>
                 <td className="px-3 py-3 text-slate-600">{lead.email}</td>
                 <td className="px-3 py-3">
                   <select
@@ -209,14 +250,24 @@ export function DashboardLeadsTable() {
                   </select>
                 </td>
                 <td className="px-3 py-3 text-right">
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteLead(lead.id)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-black/15 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
-                  </button>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onUseLead?.(lead)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
+                    >
+                      <WandSparkles className="h-3.5 w-3.5" />
+                      Use in AI
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteLead(lead.id)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-black/15 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

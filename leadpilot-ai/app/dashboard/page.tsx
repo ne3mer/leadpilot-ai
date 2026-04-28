@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Container } from "@/components/ui/container";
 import { DashboardAiMessagePanel } from "@/components/sections/dashboard/ai-message-panel";
@@ -5,8 +8,11 @@ import { DashboardHeroSection } from "@/components/sections/dashboard/dashboard-
 import { DashboardLeadsTable } from "@/components/sections/dashboard/leads-table";
 import { DashboardPerformanceChart } from "@/components/sections/dashboard/performance-chart";
 import { DashboardStatsOverview } from "@/components/sections/dashboard/stats-overview";
+import type { Lead } from "@/lib/lead-types";
 
 export default function DashboardPage() {
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+
   return (
     <div className="min-h-screen bg-transparent text-slate-950">
       <SiteHeader />
@@ -19,11 +25,14 @@ export default function DashboardPage() {
             <DashboardPerformanceChart />
           </div>
           <div className="lg:col-span-2">
-            <DashboardAiMessagePanel />
+            <DashboardAiMessagePanel
+              key={selectedLead?.id ?? "default-ai-message-panel"}
+              selectedLead={selectedLead}
+            />
           </div>
         </div>
 
-        <DashboardLeadsTable />
+        <DashboardLeadsTable onUseLead={setSelectedLead} />
       </Container>
     </div>
   );

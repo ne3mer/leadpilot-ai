@@ -11,6 +11,7 @@ export type LeadStatus = (typeof leadStatuses)[number];
 export type Lead = {
   id: string;
   name: string;
+  company: string;
   email: string;
   status: LeadStatus;
 };

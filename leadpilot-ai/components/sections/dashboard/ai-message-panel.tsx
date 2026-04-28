@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Check, Copy, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { leadStatuses, type LeadStatus } from "@/lib/lead-types";
+import { leadStatuses, type Lead, type LeadStatus } from "@/lib/lead-types";
 
 type Tone = "Friendly" | "Professional" | "Direct";
 type Goal = "Book a call" | "Send pricing" | "Follow up after demo";
@@ -90,10 +90,14 @@ const templates: MessageTemplate[] = [
   },
 ];
 
-export function DashboardAiMessagePanel() {
-  const [leadName, setLeadName] = useState("Sophia Martinez");
-  const [company, setCompany] = useState("Northstar.io");
-  const [status, setStatus] = useState<LeadStatus>("Qualified");
+type DashboardAiMessagePanelProps = {
+  selectedLead?: Lead | null;
+};
+
+export function DashboardAiMessagePanel({ selectedLead }: DashboardAiMessagePanelProps) {
+  const [leadName, setLeadName] = useState(selectedLead?.name ?? "Sophia Martinez");
+  const [company, setCompany] = useState(selectedLead?.company ?? "Northstar.io");
+  const [status, setStatus] = useState<LeadStatus>(selectedLead?.status ?? "Qualified");
   const [tone, setTone] = useState<Tone>("Professional");
   const [goal, setGoal] = useState<Goal>("Book a call");
   const [templateIndex, setTemplateIndex] = useState(0);
@@ -128,6 +132,12 @@ export function DashboardAiMessagePanel() {
         <Sparkles className="h-5 w-5 text-emerald-700" />
         <h2 className="text-lg font-medium text-black">AI Message Generator</h2>
       </div>
+
+      {selectedLead ? (
+        <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
+          Lead loaded from table: {selectedLead.name} - {selectedLead.company}
+        </p>
+      ) : null}
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="text-sm text-slate-700">
