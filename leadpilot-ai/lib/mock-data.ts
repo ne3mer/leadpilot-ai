@@ -10,8 +10,8 @@ import {
 import type { Lead } from "@/lib/lead-types";
 
 export const navLinks = [
-  { label: "Features", href: "#features" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "Features", href: "/#features" },
+  { label: "Pricing", href: "/#pricing" },
   { label: "Dashboard", href: "/dashboard" },
   { label: "Login", href: "/login" },
 ];
