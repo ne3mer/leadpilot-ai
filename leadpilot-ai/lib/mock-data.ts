@@ -7,6 +7,7 @@ import {
   Target,
   Zap,
 } from "lucide-react";
+import type { Lead } from "@/lib/lead-types";
 
 export const navLinks = [
   { label: "Features", href: "#features" },
@@ -98,7 +99,7 @@ export const pipelineData = [
   { month: "Jun", leads: 640, conversions: 228 },
 ];
 
-export const leadsData = [
+export const leadsData: Omit<Lead, "id">[] = [
   {
     name: "Sophia Martinez",
     email: "sophia@northstar.io",
