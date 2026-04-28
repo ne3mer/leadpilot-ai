@@ -5,11 +5,11 @@ import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 
 const keyFeatures = [
-  "Lead management dashboard with localStorage persistence",
-  "Template-driven AI follow-up message generator",
-  "Interactive KPI cards, charting, and pipeline table",
-  "Clean modular architecture with reusable UI primitives",
-  "Responsive premium UI optimized for desktop and mobile",
+  "Interactive dashboard with real-time stats",
+  "Lead management with local persistence",
+  "Smart follow-up message generator",
+  "Clean, responsive UI optimized for usability",
+  "Scalable frontend architecture with reusable components",
 ];
 
 const techStack = [
@@ -19,14 +19,30 @@ const techStack = [
   "Framer Motion",
   "Recharts",
   "Lucide Icons",
-  "localStorage for frontend persistence",
+  "localStorage for frontend data persistence",
 ];
 
 const metrics = [
-  { label: "Lead Data Entry Time", value: "-46%", detail: "from 5.2 min to 2.8 min per lead" },
-  { label: "Follow-up Draft Speed", value: "3.4x", detail: "faster message preparation for SDRs" },
-  { label: "Pipeline Visibility", value: "+58%", detail: "improved weekly reporting confidence" },
-  { label: "Demo-to-Proposal Progression", value: "+22%", detail: "simulated uplift from consistent follow-ups" },
+  {
+    label: "Manual Follow-up Work",
+    value: "~70% less",
+    detail: "Simulated reduction through reusable AI-assisted templates",
+  },
+  {
+    label: "Lead Response Rate",
+    value: "+~25%",
+    detail: "Simulated improvement from faster and more consistent follow-up",
+  },
+  {
+    label: "Lead Tracking Speed",
+    value: "Significantly faster",
+    detail: "Status updates and lead organization from a single dashboard",
+  },
+  {
+    label: "Pipeline Visibility",
+    value: "Higher confidence",
+    detail: "Clear KPI and chart-based overview for sales workflow decisions",
+  },
 ];
 
 export default function CaseStudyPage() {
@@ -39,58 +55,58 @@ export default function CaseStudyPage() {
           <section className="relative overflow-hidden rounded-3xl border border-black/10 bg-white p-8 shadow-sm">
             <div className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full bg-emerald-500/15 blur-3xl" />
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-              SaaS MVP Case Study
+              Portfolio SaaS MVP Case Study
             </p>
             <h1 className="mt-3 text-4xl font-semibold tracking-tight text-black md:text-5xl">
-              LeadPilot AI - Portfolio Build for Modern Sales Teams
+              LeadPilot AI - SaaS MVP for Sales Automation
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
-              This project demonstrates how I design and ship premium SaaS MVPs with
-              strong UX foundations, modular frontend architecture, and practical
-              business-oriented features suitable for fast client validation.
+              A B2B company needed a faster way to follow up with leads after
+              collecting contacts from trade shows and website forms. I designed
+              and built a modern SaaS MVP focused on lead capture, pipeline
+              clarity, and AI-assisted communication workflows.
             </p>
           </section>
 
           <section>
             <SectionHeading
               title="Project Overview"
-              description="LeadPilot AI is a frontend SaaS MVP designed to help sales teams manage leads, track pipeline health, and produce high-quality AI-assisted follow-up messages in minutes."
+              description="LeadPilot AI is a frontend SaaS MVP built to streamline lead management and accelerate sales follow-up execution."
               className="mb-5"
             />
             <Card className="p-6 text-slate-700">
-              The goal was to build a realistic product-style dashboard experience
-              that feels production-ready for demos, investor presentations, and
-              early customer discovery. The implementation focuses on polished UI,
-              scalability of code structure, and practical feature behavior.
+              This product-style implementation demonstrates how I build
+              production-grade SaaS interfaces for startups: structured codebase,
+              reusable design system, conversion-focused UX, and realistic
+              business flow representation for rapid validation.
             </Card>
           </section>
 
           <section>
             <SectionHeading
               title="Problem"
-              description="Early-stage sales teams often struggle with fragmented lead tracking and inconsistent follow-up quality."
+              description="Sales teams were manually tracking leads and handling follow-ups inconsistently."
               className="mb-5"
             />
             <Card className="p-6 text-slate-700">
-              Many founders and small GTM teams rely on spreadsheets and manual
-              communication templates. This creates inconsistent process execution,
-              slower response times, and low visibility across the pipeline. They
-              need a lightweight but premium system to centralize lead workflows
-              before investing in enterprise-grade tooling.
+              Without a central workflow, leads were scattered across spreadsheets
+              and ad-hoc notes. Follow-up messages took time to craft, response
+              times were delayed, and pipeline health was difficult to measure in
+              one place.
             </Card>
           </section>
 
           <section>
             <SectionHeading
               title="Solution"
-              description="I delivered a premium, lightweight CRM-style MVP with guided follow-up generation and persistent lead workflows."
+              description="I designed and developed a modern SaaS MVP for lead management and sales automation."
               className="mb-5"
             />
             <Card className="p-6 text-slate-700">
-              The solution combines a clean sales dashboard with local persistence,
-              dynamic lead status management, and template-based messaging aligned
-              to tone and business objective. The result is an MVP that is both
-              demo-friendly and functionally useful for early operations.
+              The platform centralizes lead organization, status tracking,
+              dashboard analytics, and AI-powered follow-up message generation
+              based on tone and intent. It is optimized for clarity, speed, and a
+              premium client-facing experience.
             </Card>
           </section>
 
@@ -118,13 +134,13 @@ export default function CaseStudyPage() {
 
           <section>
             <SectionHeading
-              title="Screenshots / Dashboard Preview"
-              description="Representative interface blocks from the implemented MVP design system."
+              title="Screenshots / Mock Dashboard Preview"
+              description="Representative UI captures for portfolio presentation and client review."
               className="mb-5"
             />
             <Card className="p-6">
               <div className="grid gap-4 md:grid-cols-3">
-                {["KPI Overview", "Lead Pipeline", "AI Follow-up Box"].map((item) => (
+                {["Landing Hero", "Lead Table", "AI Generator"].map((item) => (
                   <div key={item} className="rounded-2xl border border-black/10 bg-slate-50 p-4">
                     <p className="text-xs uppercase tracking-wide text-slate-500">{item}</p>
                     <div className="mt-3 h-24 rounded-xl bg-gradient-to-r from-emerald-200 via-emerald-100 to-white" />
@@ -139,8 +155,8 @@ export default function CaseStudyPage() {
 
           <section>
             <SectionHeading
-              title="Results / Impact (Simulated)"
-              description="Realistic benchmark-style outcomes based on MVP usage scenarios."
+              title="Results / Impact (Simulated Case Study)"
+              description="Benchmark-style outcomes based on realistic usage scenarios."
               className="mb-5"
             />
             <div className="grid gap-4 md:grid-cols-2">
@@ -158,15 +174,15 @@ export default function CaseStudyPage() {
             <SectionHeading
               title="What I Would Build Next"
               className="mb-5"
-              description="Planned roadmap to evolve this MVP into a production SaaS product."
+              description="Roadmap to transition this MVP into a fully production-ready SaaS platform."
             />
             <Card className="p-6">
               <ul className="space-y-3 text-sm leading-6 text-slate-700">
-                <li>- Backend services with secure auth and role-based access control</li>
-                <li>- Database-backed lead records with team workspaces and activity logs</li>
-                <li>- Real AI provider integration for context-aware follow-up generation</li>
+                <li>- Authentication and multi-user workspaces</li>
+                <li>- Backend APIs with database persistence</li>
                 <li>- CRM integrations (HubSpot, Salesforce, Pipedrive)</li>
-                <li>- Analytics layer for conversion attribution and revenue forecasting</li>
+                <li>- Real AI model integration for context-aware generation</li>
+                <li>- Advanced analytics and conversion attribution</li>
               </ul>
             </Card>
           </section>
