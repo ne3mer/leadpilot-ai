@@ -84,13 +84,6 @@ export const pricingTiers = [
   },
 ];
 
-export const statsCards = [
-  { label: "Total Leads", value: "12,480", delta: "+12.4%" },
-  { label: "Conversion Rate", value: "31.2%", delta: "+4.1%" },
-  { label: "Revenue Pipeline", value: "$428K", delta: "+9.7%" },
-  { label: "AI Follow-ups", value: "2,394", delta: "+18.3%" },
-];
-
 export const pipelineData = [
   { month: "Jan", leads: 320, conversions: 92 },
   { month: "Feb", leads: 410, conversions: 121 },

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
+import { computeLeadMetrics, type LeadDashboardMetrics } from "@/lib/leads/metrics";
 import type { Lead, LeadInsertInput, LeadStatus, LeadUpdateInput } from "@/lib/lead-types";
 import { isLeadStatus } from "@/lib/lead-types";
 
@@ -42,6 +43,13 @@ export async function listLeadsForCurrentUser(supabase: SupabaseServerClient): P
   }
 
   return (data ?? []).map(mapLead);
+}
+
+export async function getLeadDashboardMetricsForCurrentUser(
+  supabase: SupabaseServerClient
+): Promise<LeadDashboardMetrics> {
+  const leads = await listLeadsForCurrentUser(supabase);
+  return computeLeadMetrics(leads);
 }
 
 export async function countLeadsForCurrentUser(supabase: SupabaseServerClient): Promise<number> {

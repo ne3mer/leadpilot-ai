@@ -24,13 +24,20 @@ cp .env.example .env.local
 Set:
 
 - `NEXT_PUBLIC_SUPABASE_URL` — Project URL (Settings → API)
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Project **anon/public** key (Settings → API)
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — Project **publishable** key (Settings → API)
 
-Do **not** put the service role key in `.env.local` for this app. Normal CRUD uses the anon key with Row Level Security.
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` is still accepted as a legacy alias if you already use it locally.
+
+Do **not** put the service role / secret key in `.env.local` for this app. Normal CRUD uses the publishable key with Row Level Security.
 
 ### 3. Run the database migration
 
-Apply the version-controlled schema in `supabase/migrations/20250330000000_create_leads.sql` using one of:
+Apply the version-controlled migrations in `supabase/migrations/` in order:
+
+1. `20250330000000_create_leads.sql`
+2. `20250330120000_expand_lead_statuses.sql` (adds **Won** and **Lost** statuses)
+
+Using one of:
 
 **Option A — Supabase SQL Editor**
 

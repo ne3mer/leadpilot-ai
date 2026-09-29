@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { Check, Copy, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { leadStatuses, type Lead, type LeadStatus } from "@/lib/lead-types";
+import { LeadStatusSelectOptions } from "@/components/leads/lead-status-select-options";
+import type { Lead, LeadStatus } from "@/lib/lead-types";
 
 type Tone = "Friendly" | "Professional" | "Direct";
 type Goal = "Book a call" | "Send pricing" | "Follow up after demo";
@@ -171,11 +172,7 @@ export function DashboardAiMessagePanel({ selectedLead }: DashboardAiMessagePane
             onChange={(event) => setStatus(event.target.value as LeadStatus)}
             className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
           >
-            {leadStatuses.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
+            <LeadStatusSelectOptions idPrefix="ai-panel" />
           </select>
         </label>
 

@@ -10,6 +10,18 @@ import {
   updateLeadStatusAction,
 } from "@/lib/leads/actions";
 import { clearLegacyLocalLeads, readLegacyLocalLeads } from "@/lib/leads/local-storage";
+import {
+  applyLeadListView,
+  defaultLeadSortPreset,
+  formatLeadResultCount,
+  hasActiveLeadListFilters,
+  type LeadSortPreset,
+  type LeadStatusFilter,
+} from "@/lib/leads/list-view";
+import {
+  LeadStatusSelectOptions,
+  leadStatusSelectClassName,
+} from "@/components/leads/lead-status-select-options";
 import { Card } from "@/components/ui/card";
 import { leadStatuses, type Lead, type LeadStatus } from "@/lib/lead-types";
 
@@ -19,12 +31,15 @@ type DashboardLeadsTableProps = {
   onUseLead?: (lead: Lead) => void;
 };
 
-const statusClasses: Record<LeadStatus, string> = {
-  New: "bg-zinc-100 text-zinc-700",
-  Contacted: "bg-lime-100 text-lime-800",
-  Qualified: "bg-emerald-100 text-emerald-800",
-  "Proposal Sent": "bg-slate-100 text-slate-700",
-  Negotiation: "bg-amber-100 text-amber-800",
+const sortPresetLabels: Record<LeadSortPreset, string> = {
+  created_desc: "Created date (newest)",
+  created_asc: "Created date (oldest)",
+  name_asc: "Name (A–Z)",
+  name_desc: "Name (Z–A)",
+  company_asc: "Company (A–Z)",
+  company_desc: "Company (Z–A)",
+  status_asc: "Status (lifecycle)",
+  status_desc: "Status (reverse lifecycle)",
 };
 
 export function DashboardLeadsTable({
@@ -37,13 +52,24 @@ export function DashboardLeadsTable({
   const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<LeadStatus>("New");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<LeadStatusFilter>("all");
+  const [sortPreset, setSortPreset] = useState<LeadSortPreset>(defaultLeadSortPreset);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const nameInputRef = useRef<HTMLInputElement>(null);
   const migrationAttemptedRef = useRef(false);
 
-  const leads = initialLeads;
+  const filtersActive = hasActiveLeadListFilters(searchQuery, statusFilter);
+
+  const visibleLeads = applyLeadListView(initialLeads, searchQuery, statusFilter, sortPreset);
+
+  const resultCountLabel = formatLeadResultCount(
+    visibleLeads.length,
+    initialLeads.length,
+    filtersActive
+  );
 
   useEffect(() => {
     if (migrationAttemptedRef.current || initialLeads.length > 0) {
@@ -73,8 +99,9 @@ export function DashboardLeadsTable({
   }, [initialLeads.length, router]);
 
   const hasDuplicateEmail = useMemo(
-    () => leads.some((lead) => lead.email.toLowerCase() === email.trim().toLowerCase()),
-    [email, leads]
+    () =>
+      initialLeads.some((lead) => lead.email.toLowerCase() === email.trim().toLowerCase()),
+    [email, initialLeads]
   );
 
   const isFormValid =
@@ -82,6 +109,12 @@ export function DashboardLeadsTable({
     company.trim().length > 1 &&
     email.trim().includes("@") &&
     !hasDuplicateEmail;
+
+  function clearListFilters() {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setSortPreset(defaultLeadSortPreset);
+  }
 
   function handleAddLead() {
     if (!isFormValid || isPending) {
@@ -158,14 +191,19 @@ export function DashboardLeadsTable({
     nameInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  const isLoading = isPending && leads.length === 0 && !loadError;
+  const isLoading = isPending && initialLeads.length === 0 && !loadError;
 
   return (
     <Card className="p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-medium text-black">Lead Pipeline</h2>
+        <div>
+          <h2 className="text-lg font-medium text-black">Lead Pipeline</h2>
+          <p className="mt-1 text-xs text-slate-600">
+            Lifecycle: New → Contacted → Qualified → Proposal Sent → Negotiation → Won (or Lost)
+          </p>
+        </div>
         <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-          {leads.length} leads
+          {resultCountLabel}
         </span>
       </div>
 
@@ -234,11 +272,7 @@ export function DashboardLeadsTable({
             disabled={isPending}
             className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring disabled:opacity-60"
           >
-            {leadStatuses.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
+            <LeadStatusSelectOptions idPrefix="add-lead" />
           </select>
         </label>
 
@@ -259,6 +293,62 @@ export function DashboardLeadsTable({
         <p className="mt-2 text-xs text-amber-700">A lead with this email already exists.</p>
       ) : null}
 
+      {initialLeads.length > 0 ? (
+        <div className="mt-5 flex flex-col gap-3 lg:flex-row lg:items-end">
+          <label className="block flex-1 text-sm text-slate-700">
+            Search leads
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search by name, company, or email…"
+              className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
+            />
+          </label>
+
+          <label className="block w-full text-sm text-slate-700 lg:w-48">
+            Status
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value as LeadStatusFilter)}
+              className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
+            >
+              <option value="all">All statuses</option>
+              {leadStatuses.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block w-full text-sm text-slate-700 lg:w-56">
+            Sort
+            <select
+              value={sortPreset}
+              onChange={(event) => setSortPreset(event.target.value as LeadSortPreset)}
+              className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
+            >
+              {(Object.keys(sortPresetLabels) as LeadSortPreset[]).map((preset) => (
+                <option key={preset} value={preset}>
+                  {sortPresetLabels[preset]}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {filtersActive ? (
+            <button
+              type="button"
+              onClick={clearListFilters}
+              className="rounded-xl border border-black/15 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700 lg:mb-0.5"
+            >
+              Clear filters
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="mt-5 min-w-0 overflow-x-auto">
         {isLoading ? (
           <div
@@ -267,7 +357,7 @@ export function DashboardLeadsTable({
           >
             Loading your leads…
           </div>
-        ) : leads.length === 0 ? (
+        ) : initialLeads.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-black/15 bg-slate-50 px-6 py-12 text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
               <Users className="h-6 w-6" />
@@ -286,6 +376,20 @@ export function DashboardLeadsTable({
               Add your first lead
             </button>
           </div>
+        ) : visibleLeads.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-black/15 bg-slate-50 px-6 py-12 text-center">
+            <h3 className="text-base font-semibold text-black">No leads match your current filters.</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
+              Try adjusting your search or status filter to see more leads.
+            </p>
+            <button
+              type="button"
+              onClick={clearListFilters}
+              className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            >
+              Clear filters
+            </button>
+          </div>
         ) : (
           <table className="min-w-[640px] w-full text-left text-sm text-slate-700">
             <thead className="text-xs uppercase tracking-wide text-slate-500">
@@ -298,7 +402,7 @@ export function DashboardLeadsTable({
               </tr>
             </thead>
             <tbody>
-              {leads.map((lead) => (
+              {visibleLeads.map((lead) => (
                 <tr key={lead.id} className="border-t border-black/10">
                   <td className="px-3 py-3 font-medium text-black">{lead.name}</td>
                   <td className="px-3 py-3 text-slate-600">{lead.company}</td>
@@ -310,13 +414,10 @@ export function DashboardLeadsTable({
                       onChange={(event) =>
                         handleStatusChange(lead.id, event.target.value as LeadStatus)
                       }
-                      className={`rounded-full border border-transparent px-2.5 py-1 text-xs font-medium outline-none ring-emerald-300/60 transition focus:ring disabled:opacity-60 ${statusClasses[lead.status]}`}
+                      aria-label={`Status for ${lead.name}`}
+                      className={`rounded-full border border-transparent px-2.5 py-1 text-xs font-medium outline-none ring-emerald-300/60 transition focus:ring disabled:opacity-60 ${leadStatusSelectClassName(lead.status)}`}
                     >
-                      {leadStatuses.map((item) => (
-                        <option key={item} value={item}>
-                          {item}
-                        </option>
-                      ))}
+                      <LeadStatusSelectOptions idPrefix={`row-${lead.id}`} />
                     </select>
                   </td>
                   <td className="px-3 py-3 text-right">

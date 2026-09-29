@@ -8,15 +8,29 @@ import { DashboardHeroSection } from "@/components/sections/dashboard/dashboard-
 import { DashboardLeadsTable } from "@/components/sections/dashboard/leads-table";
 import { DashboardPerformanceChart } from "@/components/sections/dashboard/performance-chart";
 import { DashboardStatsOverview } from "@/components/sections/dashboard/stats-overview";
+import type { LeadPerformanceTrendPoint } from "@/lib/leads/chart-data";
+import type { LeadDashboardMetrics } from "@/lib/leads/metrics";
 import type { Lead } from "@/lib/lead-types";
 
 type DashboardShellProps = {
   initialLeads: Lead[];
+  metrics: LeadDashboardMetrics | null;
+  metricsError?: string | null;
+  performanceTrend: LeadPerformanceTrendPoint[] | null;
+  chartError?: string | null;
   userLabel: string;
   leadsError?: string | null;
 };
 
-export function DashboardShell({ initialLeads, userLabel, leadsError }: DashboardShellProps) {
+export function DashboardShell({
+  initialLeads,
+  metrics,
+  metricsError,
+  performanceTrend,
+  chartError,
+  userLabel,
+  leadsError,
+}: DashboardShellProps) {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   return (
@@ -24,11 +38,11 @@ export function DashboardShell({ initialLeads, userLabel, leadsError }: Dashboar
       <SiteHeader sessionUser={{ email: userLabel }} />
       <Container className="flex flex-col gap-6 py-8 sm:py-10">
         <DashboardHeroSection userLabel={userLabel} />
-        <DashboardStatsOverview />
+        <DashboardStatsOverview metrics={metrics} error={metricsError} />
 
         <div className="grid gap-6 lg:grid-cols-5">
           <div className="lg:col-span-3">
-            <DashboardPerformanceChart />
+            <DashboardPerformanceChart data={performanceTrend} error={chartError} />
           </div>
           <div className="lg:col-span-2">
             <DashboardAiMessagePanel
