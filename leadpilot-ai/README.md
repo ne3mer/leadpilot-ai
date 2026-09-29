@@ -30,6 +30,21 @@ Set:
 
 Do **not** put the service role / secret key in `.env.local` for this app. Normal CRUD uses the publishable key with Row Level Security.
 
+### 2b. DeepSeek AI (server-only)
+
+1. Create an API key in the [DeepSeek platform](https://platform.deepseek.com/).
+2. Add to `.env.local` (never commit this file):
+
+   - `DEEPSEEK_API_KEY` — your secret key (server-only)
+   - `DEEPSEEK_MODEL` — optional; defaults to `deepseek-flash` if unset
+
+3. Do **not** prefix the DeepSeek key with `NEXT_PUBLIC_` or expose it in client code.
+4. Restart the dev server after changing environment variables.
+
+Follow-up generation endpoint: `POST /api/ai/lead-follow-up` with JSON `{ "leadId", "tone", "objective" }` while signed in.
+
+Production **rate limiting** for AI calls is not implemented yet and should be added before launch.
+
 ### 3. Run the database migration
 
 Apply the version-controlled migrations in `supabase/migrations/` in order:
@@ -96,12 +111,13 @@ npm run start
 npm run lint
 ```
 
-## Architecture (Phase 1)
+## Architecture
 
 - **Auth:** Supabase Auth with `@supabase/ssr` cookie sessions; `middleware.ts` protects `/dashboard`.
 - **Database:** PostgreSQL `leads` table with RLS (`auth.uid() = user_id`).
 - **Data access:** `lib/leads/repository.ts` (queries) and `lib/leads/actions.ts` (Server Actions).
 - **Clients:** `lib/supabase/server.ts` (Server Components/Actions), `lib/supabase/client.ts` (browser, if needed later).
+- **AI:** DeepSeek via the official `openai` SDK (`baseURL: https://api.deepseek.com`) in `lib/ai/*` (server-only) and `POST /api/ai/lead-follow-up`.
 
 ## Legacy localStorage leads
 

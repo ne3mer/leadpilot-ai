@@ -1,157 +1,231 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Check, Copy, Sparkles } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { useEffect, useRef, useState } from "react";
+import { Sparkles } from "lucide-react";
+import {
+  aiFollowUpObjectiveLabels,
+  aiFollowUpObjectives,
+  aiFollowUpToneLabels,
+  aiFollowUpTones,
+  type AiFollowUpObjective,
+  type AiFollowUpTone,
+} from "@/lib/ai/constants";
 import { LeadStatusSelectOptions } from "@/components/leads/lead-status-select-options";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import type { Lead, LeadStatus } from "@/lib/lead-types";
-
-type Tone = "Friendly" | "Professional" | "Direct";
-type Goal = "Book a call" | "Send pricing" | "Follow up after demo";
-
-type MessageTemplate = {
-  opener: Record<Tone, string>;
-  context: (company: string, status: LeadStatus) => string;
-  goalLine: Record<Goal, Record<Tone, string>>;
-  closer: Record<Tone, string>;
-};
-
-const templates: MessageTemplate[] = [
-  {
-    opener: {
-      Friendly: "Hey {name},",
-      Professional: "Hi {name},",
-      Direct: "{name},",
-    },
-    context: (company, status) =>
-      `following your ${status.toLowerCase()} stage at ${company}, I wanted to share a quick next step to keep momentum high.`,
-    goalLine: {
-      "Book a call": {
-        Friendly:
-          "Would you be open to a quick 15-minute call this week to map the best rollout for your team?",
-        Professional:
-          "Would you be available for a 15-minute call this week to align on your implementation plan?",
-        Direct: "Let us lock a 15-minute call this week to finalize your next steps.",
-      },
-      "Send pricing": {
-        Friendly:
-          "I can send a simple pricing breakdown tailored to your current lead volume if that helps.",
-        Professional:
-          "I can share a tailored pricing overview based on your current pipeline requirements.",
-        Direct: "I will send the pricing breakdown today so your team can review immediately.",
-      },
-      "Follow up after demo": {
-        Friendly:
-          "How did the demo feel from your side, and is there anything you want us to customize further?",
-        Professional:
-          "I would value your feedback on the demo and can provide a customized follow-up walkthrough.",
-        Direct:
-          "Please confirm your demo feedback so we can move directly to rollout planning.",
-      },
-    },
-    closer: {
-      Friendly: "Happy to make this easy for you.",
-      Professional: "Looking forward to your thoughts.",
-      Direct: "Reply with your decision and we will proceed.",
-    },
-  },
-  {
-    opener: {
-      Friendly: "Hi {name},",
-      Professional: "Hello {name},",
-      Direct: "Hi {name},",
-    },
-    context: (company, status) =>
-      `based on your current ${status.toLowerCase()} progress at ${company}, there is a clear opportunity to speed up conversion this week.`,
-    goalLine: {
-      "Book a call": {
-        Friendly: "Want to pick a quick slot and map the fastest path to launch?",
-        Professional:
-          "I suggest a short call to align stakeholders and define your launch timeline.",
-        Direct: "Choose a call slot and we can close the plan today.",
-      },
-      "Send pricing": {
-        Friendly: "I can send you a transparent pricing summary right away.",
-        Professional:
-          "I can share a clear pricing summary with package recommendations for your use case.",
-        Direct: "I will share pricing now so procurement can review today.",
-      },
-      "Follow up after demo": {
-        Friendly: "Just checking in after the demo - should we move to the next step?",
-        Professional:
-          "Following the demo, I can provide a concise recap and proposed implementation next steps.",
-        Direct: "After the demo, confirm go/no-go so we can proceed accordingly.",
-      },
-    },
-    closer: {
-      Friendly: "Thanks again, excited to help your team grow.",
-      Professional: "Thank you for your time.",
-      Direct: "Awaiting your response.",
-    },
-  },
-];
 
 type DashboardAiMessagePanelProps = {
   selectedLead?: Lead | null;
 };
 
+type GeneratedFollowUp = {
+  subject: string;
+  message: string;
+};
+
+type CopyState = "idle" | "copied" | "failed";
+
+function isGeneratedFollowUp(value: unknown): value is GeneratedFollowUp {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.subject === "string" &&
+    typeof record.message === "string" &&
+    record.subject.trim().length > 0 &&
+    record.message.trim().length > 0
+  );
+}
+
+function mapApiError(status: number, apiMessage: string | undefined): string {
+  switch (status) {
+    case 401:
+      return "You must be signed in.";
+    case 400:
+      return apiMessage && apiMessage.trim().length > 0
+        ? apiMessage
+        : "Something went wrong. Please try again.";
+    case 404:
+      return "Lead not found.";
+    case 503:
+      return "AI service is not configured.";
+    case 502:
+      return "AI generation failed. Please try again.";
+    default:
+      return "Something went wrong. Please try again.";
+  }
+}
+
 export function DashboardAiMessagePanel({ selectedLead }: DashboardAiMessagePanelProps) {
-  const [leadName, setLeadName] = useState(selectedLead?.name ?? "Sophia Martinez");
-  const [company, setCompany] = useState(selectedLead?.company ?? "Northstar.io");
-  const [status, setStatus] = useState<LeadStatus>(selectedLead?.status ?? "Qualified");
-  const [tone, setTone] = useState<Tone>("Professional");
-  const [goal, setGoal] = useState<Goal>("Book a call");
-  const [templateIndex, setTemplateIndex] = useState(0);
-  const [copyState, setCopyState] = useState<"idle" | "success">("idle");
+  const [draftName, setDraftName] = useState("");
+  const [draftCompany, setDraftCompany] = useState("");
+  const [draftStatus, setDraftStatus] = useState<LeadStatus>("New");
+  const [tone, setTone] = useState<AiFollowUpTone>("professional");
+  const [objective, setObjective] = useState<AiFollowUpObjective>("follow_up");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generated, setGenerated] = useState<GeneratedFollowUp | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [copyState, setCopyState] = useState<CopyState>("idle");
 
-  const message = useMemo(() => {
-    const template = templates[templateIndex];
-    const name = leadName.trim() || "there";
-    const companyName = company.trim() || "your company";
+  const currentLeadIdRef = useRef<string | undefined>(selectedLead?.id);
+  const isMountedRef = useRef(true);
 
-    const opener = template.opener[tone].replace("{name}", name);
-    const context = template.context(companyName, status);
-    const goalText = template.goalLine[goal][tone];
-    const closer = template.closer[tone];
+  useEffect(() => {
+    currentLeadIdRef.current = selectedLead?.id;
+  }, [selectedLead?.id]);
 
-    return `${opener} ${context} ${goalText} ${closer}`;
-  }, [company, goal, leadName, status, templateIndex, tone]);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
-  async function handleCopyToClipboard() {
+  const leadName = selectedLead?.name ?? draftName;
+  const company = selectedLead?.company ?? draftCompany;
+  const status = selectedLead?.status ?? draftStatus;
+
+  const copyResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyResetTimerRef.current) {
+        clearTimeout(copyResetTimerRef.current);
+      }
+    };
+  }, []);
+
+  async function handleGenerate() {
+    const leadId = selectedLead?.id;
+    if (!leadId || !tone || !objective) {
+      setError("Select a saved lead before generating a follow-up.");
+      return;
+    }
+
+    const requestLeadId = leadId;
+    setIsGenerating(true);
+    setError(null);
+    setGenerated(null);
+    setCopyState("idle");
+
     try {
-      await navigator.clipboard.writeText(message);
-      setCopyState("success");
-      window.setTimeout(() => setCopyState("idle"), 1800);
+      const response = await fetch("/api/ai/lead-follow-up", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          leadId: requestLeadId,
+          tone,
+          objective,
+        }),
+      });
+
+      if (requestLeadId !== currentLeadIdRef.current) {
+        return;
+      }
+
+      let payload: unknown = null;
+      try {
+        payload = await response.json();
+      } catch {
+        payload = null;
+      }
+
+      if (!isMountedRef.current || requestLeadId !== currentLeadIdRef.current) {
+        return;
+      }
+
+      if (!response.ok) {
+        const apiMessage =
+          payload && typeof payload === "object" && "error" in payload
+            ? String((payload as { error: unknown }).error)
+            : undefined;
+        setError(mapApiError(response.status, apiMessage));
+        return;
+      }
+
+      if (!isGeneratedFollowUp(payload)) {
+        setError("Something went wrong. Please try again.");
+        return;
+      }
+
+      setGenerated({
+        subject: payload.subject.trim(),
+        message: payload.message.trim(),
+      });
     } catch {
-      setCopyState("idle");
+      if (isMountedRef.current && requestLeadId === currentLeadIdRef.current) {
+        setError("Something went wrong. Please try again.");
+      }
+    } finally {
+      if (isMountedRef.current && requestLeadId === currentLeadIdRef.current) {
+        setIsGenerating(false);
+      }
     }
   }
 
-  function handleGenerateMessage() {
-    setTemplateIndex((prev) => (prev + 1) % templates.length);
+  async function handleCopy() {
+    if (!generated) {
+      return;
+    }
+
+    const text = `Subject: ${generated.subject}\n\n${generated.message}`;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyState("copied");
+      if (copyResetTimerRef.current) {
+        clearTimeout(copyResetTimerRef.current);
+      }
+      copyResetTimerRef.current = setTimeout(() => {
+        setCopyState("idle");
+      }, 2000);
+    } catch {
+      setCopyState("failed");
+      if (copyResetTimerRef.current) {
+        clearTimeout(copyResetTimerRef.current);
+      }
+      copyResetTimerRef.current = setTimeout(() => {
+        setCopyState("idle");
+      }, 2500);
+    }
   }
+
+  const canGenerate = Boolean(selectedLead?.id) && !isGenerating;
 
   return (
     <Card className="p-5">
       <div className="flex items-center gap-2">
-        <Sparkles className="h-5 w-5 text-emerald-700" />
+        <Sparkles className="h-5 w-5 text-emerald-700" aria-hidden />
         <h2 className="text-lg font-medium text-black">AI Message Generator</h2>
       </div>
 
+      <p className="mt-2 text-sm text-slate-600">
+        Generate a concise follow-up email draft for the selected lead using your tone and objective.
+      </p>
+
       {selectedLead ? (
         <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
-          Lead loaded from table: {selectedLead.name} - {selectedLead.company}
+          Lead: {selectedLead.name}
+          {selectedLead.company ? ` — ${selectedLead.company}` : ""}
         </p>
-      ) : null}
+      ) : (
+        <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          Select a saved lead with &quot;Use in AI&quot; on the dashboard, or open a lead detail page.
+        </p>
+      )}
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="text-sm text-slate-700">
           Lead Name
           <input
             value={leadName}
-            onChange={(event) => setLeadName(event.target.value)}
+            onChange={(event) => setDraftName(event.target.value)}
             className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
-            placeholder="e.g. Sophia Martinez"
+            placeholder="From selected lead"
+            readOnly={Boolean(selectedLead)}
+            aria-readonly={Boolean(selectedLead)}
           />
         </label>
 
@@ -159,9 +233,11 @@ export function DashboardAiMessagePanel({ selectedLead }: DashboardAiMessagePane
           Company
           <input
             value={company}
-            onChange={(event) => setCompany(event.target.value)}
+            onChange={(event) => setDraftCompany(event.target.value)}
             className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
-            placeholder="e.g. Northstar.io"
+            placeholder="From selected lead"
+            readOnly={Boolean(selectedLead)}
+            aria-readonly={Boolean(selectedLead)}
           />
         </label>
 
@@ -169,8 +245,10 @@ export function DashboardAiMessagePanel({ selectedLead }: DashboardAiMessagePane
           Status
           <select
             value={status}
-            onChange={(event) => setStatus(event.target.value as LeadStatus)}
+            onChange={(event) => setDraftStatus(event.target.value as LeadStatus)}
             className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
+            disabled={Boolean(selectedLead)}
+            aria-disabled={Boolean(selectedLead)}
           >
             <LeadStatusSelectOptions idPrefix="ai-panel" />
           </select>
@@ -180,57 +258,107 @@ export function DashboardAiMessagePanel({ selectedLead }: DashboardAiMessagePane
           Tone
           <select
             value={tone}
-            onChange={(event) => setTone(event.target.value as Tone)}
+            onChange={(event) => setTone(event.target.value as AiFollowUpTone)}
             className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
+            disabled={isGenerating}
+            aria-disabled={isGenerating}
           >
-            <option>Friendly</option>
-            <option>Professional</option>
-            <option>Direct</option>
+            {aiFollowUpTones.map((value) => (
+              <option key={value} value={value}>
+                {aiFollowUpToneLabels[value]}
+              </option>
+            ))}
           </select>
         </label>
 
         <label className="text-sm text-slate-700 sm:col-span-2">
-          Goal
+          Objective
           <select
-            value={goal}
-            onChange={(event) => setGoal(event.target.value as Goal)}
+            value={objective}
+            onChange={(event) => setObjective(event.target.value as AiFollowUpObjective)}
             className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
+            disabled={isGenerating}
+            aria-disabled={isGenerating}
           >
-            <option>Book a call</option>
-            <option>Send pricing</option>
-            <option>Follow up after demo</option>
+            {aiFollowUpObjectives.map((value) => (
+              <option key={value} value={value}>
+                {aiFollowUpObjectiveLabels[value]}
+              </option>
+            ))}
           </select>
         </label>
       </div>
 
-      <div className="mt-4 rounded-xl border border-black/10 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
-        {message}
+      <div className="mt-4">
+        <Button
+          type="button"
+          className="w-full rounded-xl px-4 py-2.5 text-sm sm:w-auto"
+          disabled={!canGenerate}
+          aria-busy={isGenerating}
+          onClick={() => void handleGenerate()}
+        >
+          {isGenerating ? "Generating..." : "Generate"}
+        </Button>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={handleGenerateMessage}
-          className="rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white transition duration-300 hover:bg-emerald-700"
+      {error ? (
+        <p
+          className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+          role="alert"
         >
-          Generate Another Version
-        </button>
+          {error}
+        </p>
+      ) : null}
 
-        <button
-          type="button"
-          onClick={handleCopyToClipboard}
-          className="inline-flex items-center gap-2 rounded-xl border border-black/15 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
-        >
-          <Copy className="h-4 w-4" />
-          Copy
-        </button>
+      <div
+        className="mt-4 rounded-xl border border-black/10 bg-white p-4 sm:p-5"
+        aria-live="polite"
+        aria-busy={isGenerating}
+      >
+        {isGenerating ? (
+          <p className="text-sm text-slate-600">Generating your follow-up draft…</p>
+        ) : generated ? (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Email draft for this lead
+              </p>
+              <Button
+                type="button"
+                variant="secondary"
+                className="rounded-xl px-4 py-2 text-xs"
+                onClick={() => void handleCopy()}
+                aria-label="Copy subject and message to clipboard"
+              >
+                {copyState === "copied"
+                  ? "Copied"
+                  : copyState === "failed"
+                    ? "Copy failed"
+                    : "Copy"}
+              </Button>
+            </div>
 
-        {copyState === "success" ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
-            <Check className="h-3.5 w-3.5" />
-            Copied to clipboard
-          </span>
-        ) : null}
+            {copyState === "failed" ? (
+              <p className="text-xs text-red-700">Unable to copy. Select the text manually.</p>
+            ) : null}
+
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Subject</p>
+              <p className="mt-1 break-words text-sm font-semibold text-black">{generated.subject}</p>
+            </div>
+
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Message</p>
+              <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-800">
+                {generated.message}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-slate-600">
+            Generate a personalized follow-up based on this lead&apos;s information.
+          </p>
+        )}
       </div>
     </Card>
   );

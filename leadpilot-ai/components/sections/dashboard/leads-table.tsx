@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, UserPlus, Users, WandSparkles } from "lucide-react";
@@ -404,7 +405,14 @@ export function DashboardLeadsTable({
             <tbody>
               {visibleLeads.map((lead) => (
                 <tr key={lead.id} className="border-t border-black/10">
-                  <td className="px-3 py-3 font-medium text-black">{lead.name}</td>
+                  <td className="px-3 py-3 font-medium text-black">
+                    <Link
+                      href={`/dashboard/leads/${lead.id}`}
+                      className="text-emerald-800 underline-offset-2 transition hover:text-emerald-600 hover:underline"
+                    >
+                      {lead.name}
+                    </Link>
+                  </td>
                   <td className="px-3 py-3 text-slate-600">{lead.company}</td>
                   <td className="px-3 py-3 text-slate-600">{lead.email}</td>
                   <td className="px-3 py-3">

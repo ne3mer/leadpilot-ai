@@ -45,6 +45,25 @@ export async function listLeadsForCurrentUser(supabase: SupabaseServerClient): P
   return (data ?? []).map(mapLead);
 }
 
+export async function getLeadByIdForCurrentUser(
+  supabase: SupabaseServerClient,
+  leadId: string
+): Promise<Lead | null> {
+  await requireAuthenticatedUser(supabase);
+
+  const { data, error } = await supabase
+    .from("leads")
+    .select(leadColumns)
+    .eq("id", leadId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Unable to load lead.");
+  }
+
+  return data ? mapLead(data) : null;
+}
+
 export async function getLeadDashboardMetricsForCurrentUser(
   supabase: SupabaseServerClient
 ): Promise<LeadDashboardMetrics> {
@@ -114,18 +133,30 @@ export async function updateLeadForCurrentUser(
     updates.status = input.status;
   }
 
+  if (Object.keys(updates).length === 0) {
+    const existing = await getLeadByIdForCurrentUser(supabase, leadId);
+    if (!existing) {
+      throw new Error("Lead not found.");
+    }
+    return existing;
+  }
+
   const { data, error } = await supabase
     .from("leads")
     .update(updates)
     .eq("id", leadId)
     .select(leadColumns)
-    .single();
+    .maybeSingle();
 
   if (error) {
     if (error.code === "23505") {
       throw new Error("A lead with this email already exists.");
     }
-    throw new Error(error.message);
+    throw new Error("Unable to update lead.");
+  }
+
+  if (!data) {
+    throw new Error("Lead not found.");
   }
 
   return mapLead(data);
