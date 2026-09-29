@@ -6,7 +6,16 @@ import { Card } from "@/components/ui/card";
 
 export function DashboardStatsOverview() {
   return (
-    <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+    <section aria-label="Demo KPI metrics">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-900">
+          Demo metrics
+        </span>
+        <p className="text-sm text-slate-600">
+          Static sample KPIs until real analytics ship in a later phase.
+        </p>
+      </div>
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
       {statsCards.map((stat, index) => (
         <motion.article
           key={stat.label}
@@ -28,6 +37,7 @@ export function DashboardStatsOverview() {
           </Card>
         </motion.article>
       ))}
+      </div>
     </section>
   );
 }

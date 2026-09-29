@@ -117,9 +117,13 @@ export function DashboardAiMessagePanel({ selectedLead }: DashboardAiMessagePane
   }, [company, goal, leadName, status, templateIndex, tone]);
 
   async function handleCopyToClipboard() {
-    await navigator.clipboard.writeText(message);
-    setCopyState("success");
-    window.setTimeout(() => setCopyState("idle"), 1800);
+    try {
+      await navigator.clipboard.writeText(message);
+      setCopyState("success");
+      window.setTimeout(() => setCopyState("idle"), 1800);
+    } catch {
+      setCopyState("idle");
+    }
   }
 
   function handleGenerateMessage() {

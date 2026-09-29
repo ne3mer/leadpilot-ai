@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonClassName } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 
 export function LandingHeroSection() {
@@ -35,7 +35,7 @@ export function LandingHeroSection() {
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.16 }}
-          className="mx-auto mt-7 max-w-3xl text-pretty text-lg leading-8 text-slate-600"
+          className="mx-auto mt-7 max-w-3xl text-pretty text-base leading-8 text-slate-600 sm:text-lg"
         >
           LeadPilot AI helps sales teams qualify leads, automate personalized
           follow-ups, and close more deals with predictive pipeline insights.
@@ -45,16 +45,14 @@ export function LandingHeroSection() {
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.24 }}
-          className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row"
+          className="mt-12 flex w-full flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center"
         >
-          <Link href="/login">
-            <Button>
-              Start Free Demo
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+          <Link href="/login" className={buttonClassName("primary")}>
+            Start Free Demo
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
-          <Link href="/dashboard">
-            <Button variant="secondary">View Dashboard</Button>
+          <Link href="/dashboard" className={buttonClassName("secondary")}>
+            View Dashboard
           </Link>
         </motion.div>
       </Container>

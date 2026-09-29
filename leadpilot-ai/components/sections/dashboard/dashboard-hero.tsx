@@ -1,6 +1,10 @@
 import { Card } from "@/components/ui/card";
 
-export function DashboardHeroSection() {
+type DashboardHeroSectionProps = {
+  userLabel?: string;
+};
+
+export function DashboardHeroSection({ userLabel }: DashboardHeroSectionProps) {
   return (
     <Card className="relative overflow-hidden rounded-3xl p-7">
       <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-emerald-500/15 blur-3xl" />
@@ -13,6 +17,11 @@ export function DashboardHeroSection() {
       <p className="mt-3 max-w-2xl text-slate-600">
         Track lead velocity, conversion performance, and AI-generated actions.
       </p>
+      {userLabel ? (
+        <p className="mt-4 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">
+          Signed in as {userLabel}
+        </p>
+      ) : null}
     </Card>
   );
 }

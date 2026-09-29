@@ -19,7 +19,7 @@ const techStack = [
   "Framer Motion",
   "Recharts",
   "Lucide Icons",
-  "localStorage for frontend data persistence",
+  "Supabase Auth + PostgreSQL (RLS)",
 ];
 
 const metrics = [
@@ -50,9 +50,9 @@ export default function CaseStudyPage() {
     <div className="min-h-screen bg-transparent text-slate-950">
       <SiteHeader />
 
-      <main className="py-12">
+      <main className="py-10 sm:py-12">
         <Container className="flex flex-col gap-10">
-          <section className="relative overflow-hidden rounded-3xl border border-black/10 bg-white p-8 shadow-sm">
+          <section className="relative overflow-hidden rounded-3xl border border-black/10 bg-white p-6 shadow-sm sm:p-8">
             <div className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full bg-emerald-500/15 blur-3xl" />
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
               Portfolio SaaS MVP Case Study

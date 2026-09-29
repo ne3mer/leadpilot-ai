@@ -7,7 +7,7 @@ import {
   Target,
   Zap,
 } from "lucide-react";
-import type { Lead } from "@/lib/lead-types";
+import type { LeadInsertInput } from "@/lib/lead-types";
 
 export const navLinks = [
   { label: "Features", href: "/#features" },
@@ -100,7 +100,8 @@ export const pipelineData = [
   { month: "Jun", leads: 640, conversions: 228 },
 ];
 
-export const leadsData: Omit<Lead, "id">[] = [
+/** Legacy demo seed data (not auto-inserted for new users). */
+export const leadsData: LeadInsertInput[] = [
   {
     name: "Sophia Martinez",
     company: "Northstar",

@@ -1,39 +1,35 @@
-"use client";
-
-import { useState } from "react";
-import { SiteHeader } from "@/components/layout/site-header";
-import { Container } from "@/components/ui/container";
-import { DashboardAiMessagePanel } from "@/components/sections/dashboard/ai-message-panel";
-import { DashboardHeroSection } from "@/components/sections/dashboard/dashboard-hero";
-import { DashboardLeadsTable } from "@/components/sections/dashboard/leads-table";
-import { DashboardPerformanceChart } from "@/components/sections/dashboard/performance-chart";
-import { DashboardStatsOverview } from "@/components/sections/dashboard/stats-overview";
+import { redirect } from "next/navigation";
+import { DashboardShell } from "@/app/dashboard/dashboard-shell";
+import { listLeadsForCurrentUser } from "@/lib/leads/repository";
 import type { Lead } from "@/lib/lead-types";
+import { createClient } from "@/lib/supabase/server";
 
-export default function DashboardPage() {
-  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+export const dynamic = "force-dynamic";
+
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  let initialLeads: Lead[] = [];
+  let leadsError: string | null = null;
+
+  try {
+    initialLeads = await listLeadsForCurrentUser(supabase);
+  } catch (error) {
+    leadsError = error instanceof Error ? error.message : "Unable to load leads.";
+  }
 
   return (
-    <div className="min-h-screen bg-transparent text-slate-950">
-      <SiteHeader />
-      <Container className="flex flex-col gap-6 py-10">
-        <DashboardHeroSection />
-        <DashboardStatsOverview />
-
-        <div className="grid gap-6 lg:grid-cols-5">
-          <div className="lg:col-span-3">
-            <DashboardPerformanceChart />
-          </div>
-          <div className="lg:col-span-2">
-            <DashboardAiMessagePanel
-              key={selectedLead?.id ?? "default-ai-message-panel"}
-              selectedLead={selectedLead}
-            />
-          </div>
-        </div>
-
-        <DashboardLeadsTable onUseLead={setSelectedLead} />
-      </Container>
-    </div>
+    <DashboardShell
+      initialLeads={initialLeads}
+      userLabel={user.email ?? "Signed in"}
+      leadsError={leadsError}
+    />
   );
 }

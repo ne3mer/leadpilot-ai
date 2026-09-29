@@ -1,0 +1,49 @@
+"use client";
+
+import { useState } from "react";
+import { SiteHeader } from "@/components/layout/site-header";
+import { Container } from "@/components/ui/container";
+import { DashboardAiMessagePanel } from "@/components/sections/dashboard/ai-message-panel";
+import { DashboardHeroSection } from "@/components/sections/dashboard/dashboard-hero";
+import { DashboardLeadsTable } from "@/components/sections/dashboard/leads-table";
+import { DashboardPerformanceChart } from "@/components/sections/dashboard/performance-chart";
+import { DashboardStatsOverview } from "@/components/sections/dashboard/stats-overview";
+import type { Lead } from "@/lib/lead-types";
+
+type DashboardShellProps = {
+  initialLeads: Lead[];
+  userLabel: string;
+  leadsError?: string | null;
+};
+
+export function DashboardShell({ initialLeads, userLabel, leadsError }: DashboardShellProps) {
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+
+  return (
+    <div className="min-h-screen bg-transparent text-slate-950">
+      <SiteHeader sessionUser={{ email: userLabel }} />
+      <Container className="flex flex-col gap-6 py-8 sm:py-10">
+        <DashboardHeroSection userLabel={userLabel} />
+        <DashboardStatsOverview />
+
+        <div className="grid gap-6 lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            <DashboardPerformanceChart />
+          </div>
+          <div className="lg:col-span-2">
+            <DashboardAiMessagePanel
+              key={selectedLead?.id ?? "default-ai-message-panel"}
+              selectedLead={selectedLead}
+            />
+          </div>
+        </div>
+
+        <DashboardLeadsTable
+          initialLeads={initialLeads}
+          loadError={leadsError}
+          onUseLead={setSelectedLead}
+        />
+      </Container>
+    </div>
+  );
+}
