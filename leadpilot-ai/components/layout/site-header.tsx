@@ -61,7 +61,13 @@ export function SiteHeader({ sessionUser }: SiteHeaderProps) {
         <div className="flex items-center gap-2">
           {sessionUser ? (
             <>
-              <span className="hidden max-w-[12rem] truncate text-xs font-medium text-slate-600 sm:inline">
+              <Link
+                href="/dashboard/settings/profile"
+                className="hidden text-sm font-medium text-slate-600 transition hover:text-emerald-700 sm:inline"
+              >
+                Profile
+              </Link>
+              <span className="hidden max-w-[12rem] truncate text-xs font-medium text-slate-600 md:inline">
                 {sessionUser.email}
               </span>
               <SignOutButton className="hidden sm:inline-flex" />
@@ -103,6 +109,17 @@ export function SiteHeader({ sessionUser }: SiteHeaderProps) {
 
           <nav>
             <ul className="flex flex-col gap-1 text-sm text-slate-700">
+              {sessionUser ? (
+                <li>
+                  <Link
+                    href="/dashboard/settings/profile"
+                    className="block rounded-xl px-3 py-2.5 font-medium transition hover:bg-emerald-50 hover:text-emerald-800"
+                    onClick={closeMobile}
+                  >
+                    Sender Profile
+                  </Link>
+                </li>
+              ) : null}
               {navLinks.map((link) => (
                 <li key={link.label}>
                   <Link

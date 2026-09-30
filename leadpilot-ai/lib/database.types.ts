@@ -1,5 +1,6 @@
 import type { LeadActivityType } from "@/lib/activity-types";
 import type { LeadStatus } from "@/lib/lead-types";
+import type { SenderProfileTonePreference } from "@/lib/sender-profile-types";
 
 export type Database = {
   public: {
@@ -28,6 +29,54 @@ export type Database = {
           type?: LeadActivityType;
           content?: string;
           created_at?: string;
+        };
+        Relationships: [];
+      };
+      sender_profiles: {
+        Row: {
+          id: string;
+          user_id: string;
+          full_name: string;
+          job_title: string | null;
+          company_name: string;
+          company_description: string | null;
+          services: string | null;
+          target_customers: string | null;
+          value_proposition: string | null;
+          tone_preference: SenderProfileTonePreference;
+          website: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          full_name: string;
+          job_title?: string | null;
+          company_name: string;
+          company_description?: string | null;
+          services?: string | null;
+          target_customers?: string | null;
+          value_proposition?: string | null;
+          tone_preference?: SenderProfileTonePreference;
+          website?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          full_name?: string;
+          job_title?: string | null;
+          company_name?: string;
+          company_description?: string | null;
+          services?: string | null;
+          target_customers?: string | null;
+          value_proposition?: string | null;
+          tone_preference?: SenderProfileTonePreference;
+          website?: string | null;
+          created_at?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };
