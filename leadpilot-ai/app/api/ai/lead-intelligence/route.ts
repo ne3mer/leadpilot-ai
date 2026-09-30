@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { assertDeepSeekConfigured } from "@/lib/ai/config";
 import { generateLeadIntelligence } from "@/lib/ai/generate-lead-intelligence";
 import { parseLeadIntelligenceRequestBody } from "@/lib/ai/validation";
+import { getActivitiesForLeadForCurrentUser } from "@/lib/activities/repository";
 import { getLeadByIdForCurrentUser } from "@/lib/leads/repository";
 import { createClient } from "@/lib/supabase/server";
 
@@ -52,6 +53,13 @@ export async function POST(request: Request) {
     return jsonError("AI service is not configured.", 503);
   }
 
+  let activities;
+  try {
+    activities = await getActivitiesForLeadForCurrentUser(supabase, leadId);
+  } catch {
+    return jsonError("Unable to generate lead intelligence right now.", 502);
+  }
+
   try {
     const result = await generateLeadIntelligence({
       lead: {
@@ -61,6 +69,11 @@ export async function POST(request: Request) {
         created_at: lead.created_at,
         updated_at: lead.updated_at,
       },
+      activities: activities.map((activity) => ({
+        type: activity.type,
+        content: activity.content,
+        created_at: activity.created_at,
+      })),
     });
 
     return NextResponse.json(result);
