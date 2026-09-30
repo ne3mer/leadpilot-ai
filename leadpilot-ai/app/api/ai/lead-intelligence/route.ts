@@ -4,6 +4,8 @@ import { generateLeadIntelligence } from "@/lib/ai/generate-lead-intelligence";
 import { parseLeadIntelligenceRequestBody } from "@/lib/ai/validation";
 import { getActivitiesForLeadForCurrentUser } from "@/lib/activities/repository";
 import { getLeadByIdForCurrentUser } from "@/lib/leads/repository";
+import { getSenderProfileForCurrentUser } from "@/lib/sender-profile/repository";
+import { toSenderProfileForAI } from "@/lib/sender-profile-types";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -60,6 +62,14 @@ export async function POST(request: Request) {
     return jsonError("Unable to generate lead intelligence right now.", 502);
   }
 
+  let senderProfile = null;
+  try {
+    const profile = await getSenderProfileForCurrentUser(supabase);
+    senderProfile = profile ? toSenderProfileForAI(profile) : null;
+  } catch {
+    return jsonError("Unable to generate lead intelligence right now.", 502);
+  }
+
   try {
     const result = await generateLeadIntelligence({
       lead: {
@@ -74,6 +84,7 @@ export async function POST(request: Request) {
         content: activity.content,
         created_at: activity.created_at,
       })),
+      senderProfile,
     });
 
     return NextResponse.json(result);

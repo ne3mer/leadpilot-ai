@@ -44,3 +44,30 @@ export function isSenderProfileTonePreference(
 ): value is SenderProfileTonePreference {
   return (senderProfileTonePreferences as readonly string[]).includes(value);
 }
+
+/** Sanitized sender context for server-side AI (no ids or timestamps). */
+export type SenderProfileForAI = {
+  full_name: string;
+  job_title: string | null;
+  company_name: string;
+  company_description: string | null;
+  services: string | null;
+  target_customers: string | null;
+  value_proposition: string | null;
+  tone_preference: SenderProfileTonePreference;
+  website: string | null;
+};
+
+export function toSenderProfileForAI(profile: SenderProfile): SenderProfileForAI {
+  return {
+    full_name: profile.full_name,
+    job_title: profile.job_title,
+    company_name: profile.company_name,
+    company_description: profile.company_description,
+    services: profile.services,
+    target_customers: profile.target_customers,
+    value_proposition: profile.value_proposition,
+    tone_preference: profile.tone_preference,
+    website: profile.website,
+  };
+}
