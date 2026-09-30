@@ -6,6 +6,8 @@
 
 This document describes the design system primitives future redesign phases must use.
 
+**Signature visual language (Signal, motion, 3D artifact):** [leadpilot-signature-visual-system.md](./leadpilot-signature-visual-system.md)
+
 ---
 
 ## 1. Color tokens

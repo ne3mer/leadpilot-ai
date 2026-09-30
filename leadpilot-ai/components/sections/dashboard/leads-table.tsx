@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { UserPlus, Users } from "lucide-react";
+import { UserPlus } from "lucide-react";
+import { SignalEmptyStructure } from "@/components/visual/signal/signal-empty-structure";
 import {
   createLeadAction,
   deleteLeadAction,
@@ -412,7 +413,7 @@ export function DashboardLeadsTable({
           </div>
         ) : initialLeads.length === 0 ? (
           <div className="py-[var(--lp-space-12)] text-center">
-            <Users className="mx-auto h-6 w-6 text-muted" aria-hidden />
+            <SignalEmptyStructure className="mx-auto" />
             <h3 className={typographyClass("subsection", "mt-4")}>No leads yet</h3>
             <p className={typographyClass("bodySmall", "mx-auto mt-2 max-w-md")}>
               Add a lead below to start tracking pipeline status and follow-ups.

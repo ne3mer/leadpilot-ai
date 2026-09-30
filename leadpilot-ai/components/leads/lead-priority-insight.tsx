@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { AiGeneratedLabel } from "@/components/ui/ai-generated-label";
 import { Button } from "@/components/ui/button";
+import { AiSignalStatus } from "@/components/visual/signal/ai-signal-status";
 import { typographyClass } from "@/lib/design-system/typography";
 import {
   isLeadPriorityExplanation,
@@ -126,9 +127,10 @@ export function LeadPriorityInsight({
       </Button>
 
       {isLoading ? (
-        <p className={typographyClass("bodySmall", "mt-2 text-secondary")} role="status" aria-live="polite">
-          Generating insight…
-        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <AiSignalStatus active label="Generating priority insight" />
+          <p className={typographyClass("bodySmall", "text-secondary")}>Generating insight…</p>
+        </div>
       ) : null}
 
       {showHelper ? (

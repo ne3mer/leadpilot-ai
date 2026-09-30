@@ -1,3 +1,4 @@
+import { PrioritySignalBeam } from "@/components/visual/signal/priority-signal-beam";
 import {
   formatPriorityLevelLabel,
   type LeadPriorityLevel,
@@ -23,11 +24,16 @@ export function LeadPrioritySignal({ score, priority, className = "" }: LeadPrio
 
   return (
     <div
-      className={`flex min-w-[3.25rem] flex-col border-l-2 pl-2 ${accentBorder[priority]} ${className}`.trim()}
+      className={`flex min-w-0 items-stretch gap-2 ${className}`.trim()}
       aria-label={`Priority ${score}, ${label}`}
     >
-      <span className="tabular-nums lp-text-subsection font-medium text-primary">{score}</span>
-      <span className="lp-text-caption text-muted">{label}</span>
+      <PrioritySignalBeam priority={priority} />
+      <div
+        className={`flex min-w-[3.25rem] flex-col border-l-2 pl-2 ${accentBorder[priority]}`}
+      >
+        <span className="tabular-nums lp-text-subsection font-medium text-primary">{score}</span>
+        <span className="lp-text-caption text-muted">{label}</span>
+      </div>
     </div>
   );
 }
