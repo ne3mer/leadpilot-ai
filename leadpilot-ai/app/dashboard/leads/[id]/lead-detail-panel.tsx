@@ -13,6 +13,7 @@ import {
 import { AiLeadIntelligencePanel } from "@/components/sections/dashboard/ai-lead-intelligence-panel";
 import { DashboardAiMessagePanel } from "@/components/sections/dashboard/ai-message-panel";
 import { LeadActivityPanel } from "@/components/sections/dashboard/lead-activity-panel";
+import { LeadTimeline } from "@/components/sections/dashboard/lead-timeline";
 import type { LeadActivity } from "@/lib/activity-types";
 import { Card } from "@/components/ui/card";
 import { buttonClassName } from "@/components/ui/button";
@@ -263,6 +264,8 @@ export function LeadDetailPanel({ lead, activities }: LeadDetailPanelProps) {
           </dl>
         )}
       </Card>
+
+      <LeadTimeline leadCreatedAt={lead.created_at} activities={activities} />
 
       <LeadActivityPanel leadId={lead.id} initialActivities={activities} />
 
