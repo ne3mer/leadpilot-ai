@@ -1,16 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { deleteLeadAction, updateLeadDetailAction } from "@/lib/leads/actions";
 import { formatLeadTimestamp } from "@/lib/leads/format";
 import {
   LeadStatusSelectOptions,
+  leadStatusMetadataClassName,
   leadStatusSelectClassName,
 } from "@/components/leads/lead-status-select-options";
-import { LeadDetailWorkflowHeader } from "@/components/leads/lead-detail-workflow-header";
+import { LeadDetailBriefHeader } from "@/components/leads/lead-detail-brief-header";
+import { LeadDetailSection } from "@/components/leads/lead-detail-section";
+import { AiGuidanceBlock } from "@/components/leads/ai-guidance-block";
 import { LeadPriorityInsight } from "@/components/leads/lead-priority-insight";
 import { LeadPrioritySummary } from "@/components/leads/lead-priority-summary";
 import { SenderProfileAiCta } from "@/components/leads/sender-profile-ai-cta";
@@ -19,8 +21,13 @@ import { DashboardAiMessagePanel } from "@/components/sections/dashboard/ai-mess
 import { LeadActivityPanel } from "@/components/sections/dashboard/lead-activity-panel";
 import { LeadTimeline } from "@/components/sections/dashboard/lead-timeline";
 import type { LeadActivity } from "@/lib/activity-types";
-import { Card } from "@/components/ui/card";
-import { buttonClassName } from "@/components/ui/button";
+import { Button, buttonClassName } from "@/components/ui/button";
+import {
+  fieldLabelClassName,
+  inputClassName,
+  selectClassName,
+} from "@/components/ui/input";
+import { typographyClass } from "@/lib/design-system/typography";
 import type { LeadPriorityScoreResult } from "@/lib/leads/priority-types";
 import type { Lead, LeadStatus } from "@/lib/lead-types";
 
@@ -55,6 +62,7 @@ export function LeadDetailPanel({
 }: LeadDetailPanelProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
+  const [confirmDeleteLead, setConfirmDeleteLead] = useState(false);
   const [form, setForm] = useState<FormState>(() => toFormState(lead));
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -84,16 +92,12 @@ export function LeadDetailPanel({
       }
 
       setIsEditing(false);
-      setSuccessMessage("Lead updated successfully.");
+      setSuccessMessage("Lead updated.");
       router.refresh();
     });
   }
 
   function handleDelete() {
-    if (!window.confirm("Delete this lead? This cannot be undone.")) {
-      return;
-    }
-
     setError(null);
     startTransition(async () => {
       const result = await deleteLeadAction(lead.id);
@@ -108,214 +112,250 @@ export function LeadDetailPanel({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-emerald-700"
+    <div className="mx-auto min-w-0 max-w-3xl">
+      <LeadDetailBriefHeader lead={lead} priority={priorityResult} />
+
+      {successMessage ? (
+        <p
+          className="mt-[var(--lp-space-4)] rounded-sm border border-accent/30 bg-accent-muted px-3 py-2 lp-text-body-small text-primary"
+          role="status"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Leads
-        </Link>
+          {successMessage}
+        </p>
+      ) : null}
 
-        <div className="flex flex-wrap gap-2">
-          {!isEditing ? (
-            <button
-              type="button"
-              onClick={() => {
-                setForm(toFormState(lead));
-                setIsEditing(true);
-                setSuccessMessage(null);
-                setError(null);
-              }}
-              className="inline-flex items-center gap-2 rounded-xl border border-black/15 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
-            >
-              <Pencil className="h-4 w-4" />
-              Edit
-            </button>
-          ) : null}
+      {error ? (
+        <p
+          className="mt-[var(--lp-space-4)] rounded-sm border border-danger/20 bg-danger-muted px-3 py-2 lp-text-body-small text-danger"
+          role="alert"
+        >
+          {error}
+        </p>
+      ) : null}
 
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={handleDelete}
-            className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:border-red-300 disabled:opacity-60"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
-          </button>
-        </div>
-      </div>
-
-      <Card className="min-w-0 p-6 sm:p-8">
-        <LeadDetailWorkflowHeader
-          step="1 · Lead"
-          title="Lead information"
-          description="Review core information for this lead before prioritizing and outreach."
-        />
-
-        {successMessage ? (
-          <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-            {successMessage}
-          </p>
-        ) : null}
-
-        {error ? (
-          <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-            {error}
-          </p>
-        ) : null}
-
-        {isEditing ? (
-          <form
-            className="mt-6 space-y-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              handleSave();
-            }}
-          >
-            <label className="block text-sm text-slate-700">
-              Name
-              <input
-                required
-                value={form.name}
-                disabled={isPending}
-                onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-                className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring disabled:opacity-60"
-              />
-            </label>
-
-            <label className="block text-sm text-slate-700">
-              Company
-              <input
-                required
-                value={form.company}
-                disabled={isPending}
-                onChange={(event) => setForm((prev) => ({ ...prev, company: event.target.value }))}
-                className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring disabled:opacity-60"
-              />
-            </label>
-
-            <label className="block text-sm text-slate-700">
-              Email
-              <input
-                type="email"
-                required
-                value={form.email}
-                disabled={isPending}
-                onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
-                className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring disabled:opacity-60"
-              />
-            </label>
-
-            <label className="block text-sm text-slate-700">
-              Status
-              <select
-                value={form.status}
-                disabled={isPending}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, status: event.target.value as LeadStatus }))
-                }
-                className={`mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring disabled:opacity-60 ${leadStatusSelectClassName(form.status)}`}
+      <div className="mt-[var(--lp-space-section)] space-y-0">
+        <LeadDetailSection
+          index="01"
+          title="Lead"
+          description="Identity, contact, and pipeline status."
+          className="border-t-0 pt-0"
+        >
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {!isEditing ? (
+              <Button
+                type="button"
+                variant="secondary"
+                className="gap-1.5"
+                onClick={() => {
+                  setForm(toFormState(lead));
+                  setIsEditing(true);
+                  setSuccessMessage(null);
+                  setError(null);
+                  setConfirmDeleteLead(false);
+                }}
               >
-                <LeadStatusSelectOptions idPrefix={`edit-${lead.id}`} />
-              </select>
-            </label>
+                <Pencil className="h-4 w-4 shrink-0" aria-hidden />
+                Edit
+              </Button>
+            ) : null}
 
-            <div className="flex flex-wrap gap-3 pt-2">
-              <button
-                type="submit"
-                disabled={isPending}
-                className={buttonClassName(
-                  "primary",
-                  "rounded-xl px-4 py-2.5 text-sm disabled:opacity-60"
-                )}
-              >
-                {isPending ? "Saving…" : "Save changes"}
-              </button>
+            {!confirmDeleteLead ? (
               <button
                 type="button"
                 disabled={isPending}
-                onClick={handleCancelEdit}
-                className="rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700 disabled:opacity-60"
+                onClick={() => {
+                  setConfirmDeleteLead(true);
+                  setError(null);
+                }}
+                className="lp-focus-ring inline-flex items-center gap-1.5 rounded-sm px-2 py-1.5 lp-text-body-small font-medium text-danger hover:bg-danger-muted disabled:opacity-60"
               >
-                Cancel
+                <Trash2 className="h-4 w-4 shrink-0" aria-hidden />
+                Delete lead
               </button>
-            </div>
-          </form>
-        ) : (
-          <dl className="mt-6 grid gap-5 sm:grid-cols-2">
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-slate-500">Name</dt>
-              <dd className="mt-1 text-lg font-semibold text-black">{lead.name}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-slate-500">Company</dt>
-              <dd className="mt-1 text-base text-slate-800">{lead.company}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-slate-500">Email</dt>
-              <dd className="mt-1 text-base text-slate-800">{lead.email}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-slate-500">Status</dt>
-              <dd className="mt-2">
-                <span
-                  className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${leadStatusSelectClassName(lead.status)}`}
-                >
-                  {lead.status}
-                </span>
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-slate-500">Created</dt>
-              <dd className="mt-1 text-sm text-slate-700">{formatLeadTimestamp(lead.created_at)}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-slate-500">Last updated</dt>
-              <dd className="mt-1 text-sm text-slate-700">{formatLeadTimestamp(lead.updated_at)}</dd>
-            </div>
-          </dl>
-        )}
-      </Card>
-
-      <Card className="min-w-0 p-6 sm:p-8">
-        <LeadDetailWorkflowHeader
-          step="2 · Priority"
-          title="Priority"
-          description="Understand urgency and why this lead matters. The score is deterministic from pipeline status and activity—not AI-generated."
-        />
-        <div className="mt-5 min-w-0">
-          <LeadPrioritySummary priority={priorityResult} />
-        </div>
-        <div className="mt-6 min-w-0 border-t border-black/10 pt-5">
-          <h3 className="text-sm font-medium text-slate-800">AI priority insight</h3>
-          <p className="mt-1 text-sm text-slate-600">
-            Why this lead deserves attention and what to do next.
-          </p>
-          <SenderProfileAiCta hasSenderProfile={hasSenderProfile} className="mt-2" />
-          <div className="mt-3">
-            <LeadPriorityInsight leadId={lead.id} />
+            ) : null}
           </div>
-        </div>
-      </Card>
 
-      <LeadTimeline leadCreatedAt={lead.created_at} activities={activities} />
+          {confirmDeleteLead ? (
+            <div
+              className="mt-[var(--lp-space-4)] rounded-sm border border-danger/25 bg-danger-muted px-4 py-3"
+              role="alertdialog"
+              aria-labelledby="delete-lead-heading"
+            >
+              <p id="delete-lead-heading" className={typographyClass("bodySmall", "text-danger")}>
+                Delete this lead permanently? This cannot be undone.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={isPending}
+                  onClick={handleDelete}
+                  className="rounded-sm bg-danger px-3 py-2 lp-text-body-small font-medium text-white hover:opacity-90 disabled:opacity-60"
+                >
+                  {isPending ? "Deleting…" : "Confirm delete"}
+                </button>
+                <button
+                  type="button"
+                  disabled={isPending}
+                  onClick={() => setConfirmDeleteLead(false)}
+                  className={buttonClassName("secondary", "px-3 py-2 lp-text-body-small disabled:opacity-60")}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : null}
 
-      <LeadActivityPanel leadId={lead.id} initialActivities={activities} />
+          {isEditing ? (
+            <form
+              className="mt-[var(--lp-space-6)] space-y-[var(--lp-space-form-gap)]"
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleSave();
+              }}
+            >
+              <div className="space-y-[var(--lp-space-form-gap)] border-b border-border pb-[var(--lp-space-6)]">
+                <p className={typographyClass("caption", "text-muted")}>Identity</p>
+                <label className={fieldLabelClassName()}>
+                  Name
+                  <input
+                    required
+                    value={form.name}
+                    disabled={isPending}
+                    onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
+                    className={inputClassName("mt-2")}
+                  />
+                </label>
+                <label className={fieldLabelClassName()}>
+                  Company
+                  <input
+                    required
+                    value={form.company}
+                    disabled={isPending}
+                    onChange={(event) =>
+                      setForm((prev) => ({ ...prev, company: event.target.value }))
+                    }
+                    className={inputClassName("mt-2")}
+                  />
+                </label>
+              </div>
 
-      <AiLeadIntelligencePanel
-        key={`intel-${lead.id}`}
-        lead={lead}
-        hasSenderProfile={hasSenderProfile}
-      />
+              <div className="space-y-[var(--lp-space-form-gap)] border-b border-border pb-[var(--lp-space-6)]">
+                <p className={typographyClass("caption", "text-muted")}>Contact</p>
+                <label className={fieldLabelClassName()}>
+                  Email
+                  <input
+                    type="email"
+                    required
+                    value={form.email}
+                    disabled={isPending}
+                    onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
+                    className={inputClassName("mt-2")}
+                  />
+                </label>
+              </div>
 
-      <DashboardAiMessagePanel
-        key={`ai-${lead.id}`}
-        selectedLead={lead}
-        hasSenderProfile={hasSenderProfile}
-        workflowStep="5 · Follow-up"
-      />
+              <div className="space-y-[var(--lp-space-form-gap)]">
+                <p className={typographyClass("caption", "text-muted")}>Status</p>
+                <label className={fieldLabelClassName()}>
+                  Pipeline status
+                  <select
+                    value={form.status}
+                    disabled={isPending}
+                    onChange={(event) =>
+                      setForm((prev) => ({ ...prev, status: event.target.value as LeadStatus }))
+                    }
+                    className={`${selectClassName("mt-2")} ${leadStatusSelectClassName(form.status)}`}
+                  >
+                    <LeadStatusSelectOptions idPrefix={`edit-${lead.id}`} />
+                  </select>
+                </label>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? "Saving…" : "Save changes"}
+                </Button>
+                <button
+                  type="button"
+                  disabled={isPending}
+                  onClick={handleCancelEdit}
+                  className={buttonClassName("secondary", "px-4 py-2 text-sm disabled:opacity-60")}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <dl className="mt-[var(--lp-space-6)] min-w-0 space-y-[var(--lp-space-6)]">
+              <div className="border-b border-border pb-[var(--lp-space-5)]">
+                <dt className={typographyClass("caption", "text-muted")}>Identity</dt>
+                <dd className="mt-2 break-words lp-text-body font-medium text-primary">{lead.name}</dd>
+                <dd className="mt-1 break-words lp-text-body-small text-secondary">{lead.company}</dd>
+              </div>
+              <div className="border-b border-border pb-[var(--lp-space-5)]">
+                <dt className={typographyClass("caption", "text-muted")}>Contact</dt>
+                <dd className="mt-2 break-all lp-text-body-small text-primary">{lead.email}</dd>
+              </div>
+              <div className="grid gap-[var(--lp-space-5)] sm:grid-cols-2">
+                <div>
+                  <dt className={typographyClass("caption", "text-muted")}>Status</dt>
+                  <dd className={`mt-2 font-medium ${leadStatusMetadataClassName(lead.status)}`}>
+                    {lead.status}
+                  </dd>
+                </div>
+                <div>
+                  <dt className={typographyClass("caption", "text-muted")}>Created</dt>
+                  <dd className="mt-2 tabular-nums lp-text-body-small text-secondary">
+                    {formatLeadTimestamp(lead.created_at)}
+                  </dd>
+                </div>
+                <div className="sm:col-span-2">
+                  <dt className={typographyClass("caption", "text-muted")}>Last updated</dt>
+                  <dd className="mt-2 tabular-nums lp-text-body-small text-secondary">
+                    {formatLeadTimestamp(lead.updated_at)}
+                  </dd>
+                </div>
+              </div>
+            </dl>
+          )}
+        </LeadDetailSection>
+
+        <LeadDetailSection
+          index="02"
+          title="Priority"
+          description="Deterministic score from pipeline status and activity—not AI."
+        >
+          <LeadPrioritySummary priority={priorityResult} />
+
+          <div className="mt-[var(--lp-space-8)] border-t border-border pt-[var(--lp-space-6)]">
+            <AiGuidanceBlock
+              title="Priority insight"
+              description="Why this lead might deserve attention beyond the score."
+            >
+              <SenderProfileAiCta hasSenderProfile={hasSenderProfile} />
+              <LeadPriorityInsight leadId={lead.id} variant="guidance" />
+            </AiGuidanceBlock>
+          </div>
+        </LeadDetailSection>
+
+        <LeadTimeline leadCreatedAt={lead.created_at} activities={activities} />
+
+        <LeadActivityPanel leadId={lead.id} initialActivities={activities} />
+
+        <AiLeadIntelligencePanel
+          key={`intel-${lead.id}`}
+          lead={lead}
+          hasSenderProfile={hasSenderProfile}
+          presentation="detail"
+        />
+
+        <DashboardAiMessagePanel
+          key={`ai-${lead.id}`}
+          selectedLead={lead}
+          hasSenderProfile={hasSenderProfile}
+          presentation="detail"
+        />
+      </div>
     </div>
   );
 }

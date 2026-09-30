@@ -42,3 +42,22 @@ export function leadStatusSelectClassName(status: LeadStatus) {
 
   return classes[status];
 }
+
+/** Text color only — for quiet pipeline metadata controls */
+export function leadStatusMetadataClassName(status: LeadStatus) {
+  const classes: Record<LeadStatus, string> = {
+    New: "text-[var(--lp-status-new-fg)]",
+    Contacted: "text-[var(--lp-status-contacted-fg)]",
+    Qualified: "text-[var(--lp-status-qualified-fg)]",
+    "Proposal Sent": "text-[var(--lp-status-proposal-fg)]",
+    Negotiation: "text-[var(--lp-status-negotiation-fg)]",
+    Won: "text-[var(--lp-status-won-fg)]",
+    Lost: "text-[var(--lp-status-lost-fg)]",
+  };
+
+  return classes[status];
+}
+
+export function leadStatusQuietSelectClassName(status: LeadStatus) {
+  return `border-border bg-surface font-normal ${leadStatusMetadataClassName(status)}`;
+}

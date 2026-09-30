@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { typographyClass } from "@/lib/design-system/typography";
 
 type SenderProfileAiCtaProps = {
   hasSenderProfile: boolean;
@@ -11,14 +12,14 @@ export function SenderProfileAiCta({ hasSenderProfile, className = "" }: SenderP
   }
 
   return (
-    <p className={`text-sm text-slate-600 ${className}`.trim()}>
+    <p className={`${typographyClass("bodySmall", "text-secondary")} ${className}`.trim()}>
       <Link
         href="/dashboard/settings/profile"
-        className="font-medium text-emerald-800 underline-offset-2 hover:text-emerald-600 hover:underline"
+        className="lp-focus-ring font-medium text-accent underline-offset-2 hover:underline"
       >
-        Add your Profile
+        Add your profile
       </Link>{" "}
-      to improve AI-generated recommendations.
+      to make AI suggestions more specific.
     </p>
   );
 }

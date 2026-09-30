@@ -13,6 +13,8 @@ import { LeadStatusSelectOptions } from "@/components/leads/lead-status-select-o
 import { SenderProfileAiCta } from "@/components/leads/sender-profile-ai-cta";
 import { AiGeneratedLabel } from "@/components/ui/ai-generated-label";
 import { Button } from "@/components/ui/button";
+import { LeadDetailSection } from "@/components/leads/lead-detail-section";
+import { AiGuidanceBlock } from "@/components/leads/ai-guidance-block";
 import { Card } from "@/components/ui/card";
 import {
   fieldLabelClassName,
@@ -27,6 +29,8 @@ type DashboardAiMessagePanelProps = {
   hasSenderProfile?: boolean;
   workflowStep?: string;
   layout?: "default" | "compact";
+  /** Lead detail: flat section, tone/objective only */
+  presentation?: "default" | "detail";
 };
 
 type GeneratedFollowUp = {
@@ -93,6 +97,7 @@ export function DashboardAiMessagePanel({
   hasSenderProfile = true,
   workflowStep,
   layout = "default",
+  presentation = "default",
 }: DashboardAiMessagePanelProps) {
   const [draftName, setDraftName] = useState("");
   const [draftCompany, setDraftCompany] = useState("");
@@ -229,8 +234,180 @@ export function DashboardAiMessagePanel({
 
   const canGenerate = Boolean(selectedLead?.id) && !isGenerating;
   const isCompact = layout === "compact";
+  const isDetail = presentation === "detail";
+  const hideLeadFields = isDetail && Boolean(selectedLead);
 
-  const panelBody = (
+  const configFields = (
+    <div
+      className={`grid gap-[var(--lp-space-form-gap)] ${hideLeadFields ? "sm:grid-cols-2" : "sm:grid-cols-2"}`}
+    >
+      {!hideLeadFields ? (
+        <>
+          <label className={fieldLabelClassName()}>
+            Lead name
+            <input
+              value={leadName}
+              onChange={(event) => setDraftName(event.target.value)}
+              className={inputClassName("mt-2")}
+              placeholder="From selected lead"
+              readOnly={Boolean(selectedLead)}
+              aria-readonly={Boolean(selectedLead)}
+            />
+          </label>
+
+          <label className={fieldLabelClassName()}>
+            Company
+            <input
+              value={company}
+              onChange={(event) => setDraftCompany(event.target.value)}
+              className={inputClassName("mt-2")}
+              placeholder="From selected lead"
+              readOnly={Boolean(selectedLead)}
+              aria-readonly={Boolean(selectedLead)}
+            />
+          </label>
+
+          <label className={fieldLabelClassName()}>
+            Status
+            <select
+              value={status}
+              onChange={(event) => setDraftStatus(event.target.value as LeadStatus)}
+              className={selectClassName("mt-2")}
+              disabled={Boolean(selectedLead)}
+              aria-disabled={Boolean(selectedLead)}
+            >
+              <LeadStatusSelectOptions idPrefix="ai-panel" />
+            </select>
+          </label>
+        </>
+      ) : null}
+
+      <label className={fieldLabelClassName()}>
+        Tone
+        <select
+          value={tone}
+          onChange={(event) => setTone(event.target.value as AiFollowUpTone)}
+          className={selectClassName("mt-2")}
+          disabled={isGenerating}
+          aria-disabled={isGenerating}
+        >
+          {aiFollowUpTones.map((value) => (
+            <option key={value} value={value}>
+              {aiFollowUpToneLabels[value]}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className={fieldLabelClassName()}>
+        Objective
+        <select
+          value={objective}
+          onChange={(event) => setObjective(event.target.value as AiFollowUpObjective)}
+          className={selectClassName("mt-2")}
+          disabled={isGenerating}
+          aria-disabled={isGenerating}
+        >
+          {aiFollowUpObjectives.map((value) => (
+            <option key={value} value={value}>
+              {aiFollowUpObjectiveLabels[value]}
+            </option>
+          ))}
+        </select>
+      </label>
+    </div>
+  );
+
+  const outputBlock = (
+    <div className="min-w-0" aria-live="polite" aria-busy={isGenerating}>
+      {isGenerating ? (
+        <p className={typographyClass("bodySmall", "text-secondary")}>
+          Generating your follow-up draft…
+        </p>
+      ) : generated ? (
+        <div className="min-w-0 space-y-[var(--lp-space-5)]">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <Button
+              type="button"
+              variant="secondary"
+              className="px-3 py-1.5 text-xs"
+              onClick={() => void handleCopy()}
+              aria-label="Copy subject and message to clipboard"
+            >
+              {copyState === "copied"
+                ? "Copied"
+                : copyState === "failed"
+                  ? "Copy failed"
+                  : "Copy message"}
+            </Button>
+          </div>
+
+          {copyState === "failed" ? (
+            <p className="lp-text-caption text-danger">Unable to copy. Select the text manually.</p>
+          ) : null}
+
+          <div>
+            <p className="lp-text-caption text-muted">Subject</p>
+            <p className="mt-2 break-words lp-text-body font-medium text-primary">
+              {generated.subject}
+            </p>
+          </div>
+
+          <div>
+            <p className="lp-text-caption text-muted">Message</p>
+            <p className="mt-2 whitespace-pre-wrap break-words lp-text-body text-secondary">
+              {generated.message}
+            </p>
+          </div>
+
+          <AiGeneratedLabel disclosure="draft" />
+        </div>
+      ) : (
+        <p className={typographyClass("bodySmall", "text-muted")}>
+          Your draft subject and message will appear here after generation.
+        </p>
+      )}
+    </div>
+  );
+
+  const panelBody = isDetail ? (
+    <>
+      <AiGuidanceBlock
+        title="Follow-up message"
+        description="What should you send? Tone and objective shape the draft for this lead."
+        disclosure="draft"
+      >
+        <SenderProfileAiCta hasSenderProfile={hasSenderProfile} />
+        <details className="group mt-[var(--lp-space-4)] min-w-0">
+          <summary className="lp-focus-ring cursor-pointer list-none lp-text-body-small font-medium text-secondary marker:content-none [&::-webkit-details-marker]:hidden">
+            Tone & objective
+          </summary>
+          <div className="mt-[var(--lp-space-4)] min-w-0">{configFields}</div>
+        </details>
+        <Button
+          type="button"
+          variant="secondary"
+          className="mt-[var(--lp-space-4)] w-full sm:w-auto"
+          disabled={!canGenerate}
+          aria-busy={isGenerating}
+          onClick={() => void handleGenerate()}
+        >
+          {isGenerating ? "Generating…" : "Generate follow-up"}
+        </Button>
+      </AiGuidanceBlock>
+
+      {error ? (
+        <p
+          className="mt-4 rounded-sm border border-danger/20 bg-danger-muted px-3 py-2 lp-text-body-small text-danger"
+          role="alert"
+        >
+          {error}
+        </p>
+      ) : null}
+
+      <div className="mt-[var(--lp-space-6)]">{outputBlock}</div>
+    </>
+  ) : (
     <>
       {workflowStep ? (
         <p className="lp-text-caption text-muted">{workflowStep}</p>
@@ -258,78 +435,7 @@ export function DashboardAiMessagePanel({
         </p>
       )}
 
-      <div className="mt-4 grid gap-[var(--lp-space-form-gap)] sm:grid-cols-2">
-        <label className={fieldLabelClassName()}>
-          Lead name
-          <input
-            value={leadName}
-            onChange={(event) => setDraftName(event.target.value)}
-            className={inputClassName("mt-2")}
-            placeholder="From selected lead"
-            readOnly={Boolean(selectedLead)}
-            aria-readonly={Boolean(selectedLead)}
-          />
-        </label>
-
-        <label className={fieldLabelClassName()}>
-          Company
-          <input
-            value={company}
-            onChange={(event) => setDraftCompany(event.target.value)}
-            className={inputClassName("mt-2")}
-            placeholder="From selected lead"
-            readOnly={Boolean(selectedLead)}
-            aria-readonly={Boolean(selectedLead)}
-          />
-        </label>
-
-        <label className={fieldLabelClassName()}>
-          Status
-          <select
-            value={status}
-            onChange={(event) => setDraftStatus(event.target.value as LeadStatus)}
-            className={selectClassName("mt-2")}
-            disabled={Boolean(selectedLead)}
-            aria-disabled={Boolean(selectedLead)}
-          >
-            <LeadStatusSelectOptions idPrefix="ai-panel" />
-          </select>
-        </label>
-
-        <label className={fieldLabelClassName()}>
-          Tone
-          <select
-            value={tone}
-            onChange={(event) => setTone(event.target.value as AiFollowUpTone)}
-            className={selectClassName("mt-2")}
-            disabled={isGenerating}
-            aria-disabled={isGenerating}
-          >
-            {aiFollowUpTones.map((value) => (
-              <option key={value} value={value}>
-                {aiFollowUpToneLabels[value]}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className={`${fieldLabelClassName()} sm:col-span-2`}>
-          Objective
-          <select
-            value={objective}
-            onChange={(event) => setObjective(event.target.value as AiFollowUpObjective)}
-            className={selectClassName("mt-2")}
-            disabled={isGenerating}
-            aria-disabled={isGenerating}
-          >
-            {aiFollowUpObjectives.map((value) => (
-              <option key={value} value={value}>
-                {aiFollowUpObjectiveLabels[value]}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      <div className="mt-4">{configFields}</div>
 
       <div className="mt-4">
         <Button
@@ -352,58 +458,21 @@ export function DashboardAiMessagePanel({
         </p>
       ) : null}
 
-      <div
-        className="mt-4 rounded-sm border border-border bg-surface-subtle p-4"
-        aria-live="polite"
-        aria-busy={isGenerating}
-      >
-        {isGenerating ? (
-          <p className="lp-text-body-small text-secondary">Generating your follow-up draft…</p>
-        ) : generated ? (
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <AiGeneratedLabel disclosure="draft" />
-              <Button
-                type="button"
-                variant="secondary"
-                className="px-3 py-1.5 text-xs"
-                onClick={() => void handleCopy()}
-                aria-label="Copy subject and message to clipboard"
-              >
-                {copyState === "copied"
-                  ? "Copied"
-                  : copyState === "failed"
-                    ? "Copy failed"
-                    : "Copy"}
-              </Button>
-            </div>
-
-            {copyState === "failed" ? (
-              <p className="lp-text-caption text-danger">Unable to copy. Select the text manually.</p>
-            ) : null}
-
-            <div>
-              <p className="lp-text-caption text-muted">Subject</p>
-              <p className="mt-1 break-words lp-text-body-small font-medium text-primary">
-                {generated.subject}
-              </p>
-            </div>
-
-            <div>
-              <p className="lp-text-caption text-muted">Message</p>
-              <p className="mt-2 whitespace-pre-wrap break-words lp-text-body-small text-secondary">
-                {generated.message}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <p className="lp-text-body-small text-muted">
-            Generated copy will appear here after you run draft generation.
-          </p>
-        )}
-      </div>
+      <div className="mt-4 rounded-sm border border-border bg-surface-subtle p-4">{outputBlock}</div>
     </>
   );
+
+  if (isDetail) {
+    return (
+      <LeadDetailSection
+        index="06"
+        title="Follow-up"
+        description="Turn understanding into outreach—a draft you can copy and send."
+      >
+        {panelBody}
+      </LeadDetailSection>
+    );
+  }
 
   if (isCompact) {
     return (

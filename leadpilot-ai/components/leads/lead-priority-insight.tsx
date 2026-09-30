@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { AiGeneratedLabel } from "@/components/ui/ai-generated-label";
 import { Button } from "@/components/ui/button";
+import { typographyClass } from "@/lib/design-system/typography";
 import {
   isLeadPriorityExplanation,
   mapPriorityInsightApiError,
@@ -15,12 +16,15 @@ type LeadPriorityInsightProps = {
   compact?: boolean;
   /** Compact dashboard row: no helper text, smaller AI result block */
   dashboardRow?: boolean;
+  /** Lead detail: no sparkle icon, design-system copy */
+  variant?: "default" | "guidance";
 };
 
 export function LeadPriorityInsight({
   leadId,
   compact = false,
   dashboardRow = false,
+  variant = "default",
 }: LeadPriorityInsightProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [insight, setInsight] = useState<LeadPriorityExplanation | null>(null);
@@ -89,13 +93,22 @@ export function LeadPriorityInsight({
     }
   }
 
+  const isGuidance = variant === "guidance";
   const buttonLabel = isLoading
-    ? "Generating AI insight"
+    ? "Generating priority insight"
     : insight
-      ? "Refresh AI priority insight"
-      : "Generate AI priority insight";
+      ? "Refresh priority insight"
+      : "Generate priority insight";
 
-  const showHelper = !dashboardRow && !isLoading && !insight && !insightError;
+  const showHelper = !dashboardRow && !isLoading && !insight && !insightError && !isGuidance;
+
+  const buttonText = isLoading
+    ? "Generating…"
+    : insight
+      ? "Refresh insight"
+      : isGuidance
+        ? "Generate insight"
+        : "AI insight";
 
   return (
     <div className="min-w-0">
@@ -106,43 +119,43 @@ export function LeadPriorityInsight({
         onClick={handleExplain}
         aria-busy={isLoading}
         aria-label={buttonLabel}
-        className={`min-w-0 gap-1.5 rounded-xl text-sm ${compact || dashboardRow ? "px-3 py-2" : "px-4 py-2.5"}`}
+        className={`min-w-0 text-sm ${compact || dashboardRow ? "gap-1.5 px-3 py-2" : "px-4 py-2.5"} ${!isGuidance ? "gap-1.5" : ""}`}
       >
-        <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        {isLoading ? "Loading…" : insight ? "Refresh insight" : "AI insight"}
+        {!isGuidance ? <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden /> : null}
+        {buttonText}
       </Button>
 
       {isLoading ? (
-        <p className="mt-2 text-sm text-slate-600" role="status" aria-live="polite">
+        <p className={typographyClass("bodySmall", "mt-2 text-secondary")} role="status" aria-live="polite">
           Generating insight…
         </p>
       ) : null}
 
       {showHelper ? (
-        <p className="mt-2 text-sm text-slate-500">
+        <p className={typographyClass("bodySmall", "mt-2 text-muted")}>
           On demand: AI explanation of why this lead deserves attention and a suggested next step.
         </p>
       ) : null}
 
       {insight ? (
         <div
-          className={`mt-2 min-w-0 space-y-2 rounded-sm border border-border bg-surface-subtle text-secondary ${dashboardRow ? "px-2.5 py-2 lp-text-caption" : "px-3 py-2.5 lp-text-body-small"}`}
+          className={`mt-[var(--lp-space-4)] min-w-0 space-y-3 ${typographyClass("bodySmall", "text-primary")}`}
           aria-live="polite"
         >
-          <AiGeneratedLabel className="mb-1" />
-          <p className="break-words">
-            <span className="font-medium text-slate-900">Why: </span>
+          <AiGeneratedLabel disclosure="generated" className="mb-1" />
+          <p className="break-words leading-relaxed">
+            <span className="font-medium text-secondary">Why · </span>
             {insight.explanation}
           </p>
-          <p className="break-words">
-            <span className="font-medium text-slate-900">Suggested next step: </span>
+          <p className="break-words leading-relaxed">
+            <span className="font-medium text-secondary">Next step · </span>
             {insight.nextAction}
           </p>
         </div>
       ) : null}
 
       {insightError ? (
-        <p className="mt-2 text-sm text-red-700" role="alert">
+        <p className={`mt-2 ${typographyClass("bodySmall", "text-danger")}`} role="alert">
           {insightError}
         </p>
       ) : null}

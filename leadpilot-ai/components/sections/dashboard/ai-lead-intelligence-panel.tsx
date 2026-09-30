@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Brain } from "lucide-react";
+import { AiGuidanceBlock } from "@/components/leads/ai-guidance-block";
+import { LeadDetailSection } from "@/components/leads/lead-detail-section";
+import { SenderProfileAiCta } from "@/components/leads/sender-profile-ai-cta";
 import { AiGeneratedLabel } from "@/components/ui/ai-generated-label";
 import { Button } from "@/components/ui/button";
-import { SenderProfileAiCta } from "@/components/leads/sender-profile-ai-cta";
-import { Card } from "@/components/ui/card";
+import { typographyClass } from "@/lib/design-system/typography";
 import type { Lead } from "@/lib/lead-types";
 
 type AiLeadIntelligencePanelProps = {
   lead: Lead;
   hasSenderProfile?: boolean;
+  presentation?: "card" | "detail";
 };
 
 type LeadIntelligence = {
@@ -53,10 +55,13 @@ function mapApiError(status: number, apiMessage: string | undefined): string {
   }
 }
 
-export function AiLeadIntelligencePanel({
+function IntelligenceBody({
   lead,
-  hasSenderProfile = true,
-}: AiLeadIntelligencePanelProps) {
+  hasSenderProfile,
+}: {
+  lead: Lead;
+  hasSenderProfile: boolean;
+}) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [intelligence, setIntelligence] = useState<LeadIntelligence | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -134,67 +139,88 @@ export function AiLeadIntelligencePanel({
   }
 
   return (
-    <Card className="min-w-0 p-5 sm:p-6">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
-        5 · AI intelligence
-      </p>
-      <div className="mt-1 flex flex-wrap items-center gap-2">
-        <Brain className="h-5 w-5 text-emerald-700" aria-hidden />
-        <h2 className="text-lg font-medium text-black">AI lead intelligence</h2>
-        <AiGeneratedLabel />
-      </div>
-
-      <p className="mt-2 text-sm text-slate-600">
-        Broader context, approach, and recommended next step for {lead.name}—based on verified
-        lead data and pipeline status.
-      </p>
-      <SenderProfileAiCta hasSenderProfile={hasSenderProfile} className="mt-2" />
-
-      <div className="mt-4">
+    <>
+      <AiGuidanceBlock
+        title="Lead intelligence"
+        description="Concise understanding from verified lead data, activities, and your sender context."
+      >
+        <SenderProfileAiCta hasSenderProfile={hasSenderProfile} />
         <Button
           type="button"
-          className="w-full rounded-xl px-4 py-2.5 text-sm sm:w-auto"
+          variant="secondary"
+          className="mt-[var(--lp-space-3)] w-full sm:w-auto"
           disabled={isGenerating}
           aria-busy={isGenerating}
           onClick={() => void handleGenerate()}
         >
-          {isGenerating ? "Generating..." : "Generate Intelligence"}
+          {isGenerating ? "Generating…" : "Generate intelligence"}
         </Button>
-      </div>
+      </AiGuidanceBlock>
 
       {error ? (
-        <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+        <p
+          className="mt-4 rounded-sm border border-danger/20 bg-danger-muted px-3 py-2 lp-text-body-small text-danger"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
 
-      <div className="mt-4 space-y-4 rounded-xl border border-black/10 bg-slate-50/80 p-4" aria-live="polite">
+      <div className="mt-[var(--lp-space-6)] min-w-0" aria-live="polite" aria-busy={isGenerating}>
         {isGenerating ? (
-          <p className="text-sm text-slate-600">Analyzing lead context…</p>
+          <p className={typographyClass("bodySmall", "text-secondary")}>Analyzing lead context…</p>
         ) : intelligence ? (
-          <>
-            <AiGeneratedLabel className="mb-1" />
+          <div className="min-w-0 space-y-[var(--lp-space-5)]">
             <section>
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Summary</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-800">{intelligence.summary}</p>
+              <h4 className={typographyClass("caption", "text-muted")}>Summary</h4>
+              <p className="mt-2 break-words leading-relaxed lp-text-body-small text-primary">
+                {intelligence.summary}
+              </p>
             </section>
             <section>
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Recommended next step
-              </h3>
-              <p className="mt-1 text-sm font-medium leading-6 text-black">{intelligence.nextAction}</p>
+              <h4 className={typographyClass("caption", "text-muted")}>Next action</h4>
+              <p className="mt-2 break-words font-medium leading-relaxed lp-text-body-small text-primary">
+                {intelligence.nextAction}
+              </p>
             </section>
             <section>
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Suggested Approach</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-800">{intelligence.approach}</p>
+              <h4 className={typographyClass("caption", "text-muted")}>Approach</h4>
+              <p className="mt-2 break-words leading-relaxed lp-text-body-small text-secondary">
+                {intelligence.approach}
+              </p>
             </section>
-          </>
+            <AiGeneratedLabel disclosure="generated" className="pt-1" />
+          </div>
         ) : (
-          <p className="text-sm text-slate-600">
-            Generate a concise summary, recommended next action, and suggested approach for this lead.
+          <p className={typographyClass("bodySmall", "text-muted")}>
+            Generated summary, next action, and approach will appear here.
           </p>
         )}
       </div>
-    </Card>
+    </>
   );
+}
+
+export function AiLeadIntelligencePanel({
+  lead,
+  hasSenderProfile = true,
+  presentation = "card",
+}: AiLeadIntelligencePanelProps) {
+  const body = (
+    <IntelligenceBody lead={lead} hasSenderProfile={hasSenderProfile} />
+  );
+
+  if (presentation === "detail") {
+    return (
+      <LeadDetailSection
+        index="05"
+        title="Intelligence"
+        description="Broader context beyond the priority score—when you need a full read on this lead."
+      >
+        {body}
+      </LeadDetailSection>
+    );
+  }
+
+  return body;
 }

@@ -70,7 +70,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
   return (
     <div className="min-h-screen bg-page pb-20 text-primary md:pb-0">
       <SiteHeader sessionUser={{ email: user.email ?? "Signed in" }} />
-      <Container className="py-8 sm:py-10">
+      <Container className="py-8 sm:py-10 lg:py-12">
         <LeadDetailPanel
           key={`${lead.id}-${lead.updated_at}`}
           lead={lead}
