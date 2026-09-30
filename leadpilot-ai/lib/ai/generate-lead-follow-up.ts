@@ -3,10 +3,10 @@ import "server-only";
 import { leadActivityTypeLabels } from "@/lib/activity-types";
 import type { AiFollowUpObjective, AiFollowUpTone } from "@/lib/ai/constants";
 import {
-  MAX_INTELLIGENCE_ACTIVITIES,
-  selectActivitiesForIntelligence,
-  type LeadIntelligenceActivityContext,
-} from "@/lib/ai/generate-lead-intelligence";
+  MAX_AI_ACTIVITY_CONTEXT,
+  selectActivitiesForAiContext,
+  type AiActivityContext,
+} from "@/lib/ai/activity-context";
 import { getDeepSeekChatModel, getDeepSeekClient } from "@/lib/ai/deepseek";
 import { extractJsonObject, parseFollowUpEmailPayload } from "@/lib/ai/validation";
 import { formatLeadTimestamp } from "@/lib/leads/format";
@@ -17,13 +17,13 @@ import {
 } from "@/lib/sender-profile-types";
 import type OpenAI from "openai";
 
-export type { LeadIntelligenceActivityContext as FollowUpActivityContext };
+export type { AiActivityContext as FollowUpActivityContext };
 
 export type GenerateLeadFollowUpInput = {
   lead: Pick<Lead, "name" | "company" | "status">;
   tone: AiFollowUpTone;
   objective: AiFollowUpObjective;
-  activities: LeadIntelligenceActivityContext[];
+  activities: AiActivityContext[];
   senderProfile: SenderProfileForAI | null;
 };
 
@@ -94,6 +94,9 @@ const TONE_INSTRUCTIONS: Record<AiFollowUpTone, string> = {
 };
 
 const REWRITE_USER_MESSAGE = `The previous draft failed quality checks (meta-language and/or unsupported sender/calendar claims). Rewrite as a finished email using only verified LEAD DATA, SENDER PROFILE facts (if any), and ACTIVITIES (if any). No meta commentary. No invented history, pricing, demos, proposals, or schedule promises. JSON only: {"subject":"...","message":"..."}`;
+
+/** deepseek-flash thinking mode emits long reasoning_content; low caps yield empty/truncated JSON. */
+const FOLLOW_UP_COMPLETION_MAX_TOKENS = 4096;
 
 /** Recipient-visible meta / constraint language (pairs with prompt + one retry). */
 const META_LANGUAGE_PATTERNS: RegExp[] = [
@@ -211,19 +214,19 @@ function buildSenderProfileSection(profile: SenderProfileForAI | null): string {
   return ["SENDER PROFILE", ...lines].join("\n");
 }
 
-function formatActivityBlock(activity: LeadIntelligenceActivityContext): string {
+function formatActivityBlock(activity: AiActivityContext): string {
   const when = formatLeadTimestamp(activity.created_at);
   const label = leadActivityTypeLabels[activity.type];
   return `[${when}] ${label}:\n${activity.content.trim()}`;
 }
 
-function buildActivitiesSection(activities: LeadIntelligenceActivityContext[]): string {
+function buildActivitiesSection(activities: AiActivityContext[]): string {
   if (activities.length === 0) {
     return "RECENT ACTIVITIES\n(none recorded — do not invent prior contact)";
   }
 
   const truncatedNote =
-    activities.length >= MAX_INTELLIGENCE_ACTIVITIES
+    activities.length >= MAX_AI_ACTIVITY_CONTEXT
       ? "(Internal: up to the most recent activities shown—not necessarily complete history.)\n"
       : "";
 
@@ -257,6 +260,21 @@ function buildUserPrompt(input: GenerateLeadFollowUpInput): string {
   ].join("\n");
 }
 
+/** Block guarantees, fake social proof, and explicit calendar claims. */
+const EGREGIOUS_CLAIM_PATTERNS: RegExp[] = [
+  /\bi can guarantee\b/i,
+  /\bwe('ve| have) helped (hundreds|dozens|many) (of )?companies\b/i,
+  /\b(i'm|i am) available (tomorrow|next week|on \w+day)\b/i,
+  /\bbook a demo\b/i,
+];
+
+/** Extra strict when no verified sender profile exists (Phase 5C.2). */
+const NO_PROFILE_SENDER_CLAIM_PATTERNS: RegExp[] = [
+  ...UNSUPPORTED_SENDER_CLAIM_PATTERNS,
+  /\b(i'll|i will) (send|prepare) (you )?(a )?proposal\b/i,
+  /\blet'?s book a (demo|call)\b/i,
+];
+
 function needsQualityRewrite(
   result: GenerateLeadFollowUpResult,
   senderProfile: SenderProfileForAI | null
@@ -265,21 +283,14 @@ function needsQualityRewrite(
   if (META_LANGUAGE_PATTERNS.some((pattern) => pattern.test(combined))) {
     return true;
   }
-  if (!senderProfile && UNSUPPORTED_SENDER_CLAIM_PATTERNS.some((pattern) => pattern.test(combined))) {
+  if (EGREGIOUS_CLAIM_PATTERNS.some((pattern) => pattern.test(combined))) {
     return true;
   }
-  return ALWAYS_UNSUPPORTED_CLAIM_PATTERNS.some((pattern) => pattern.test(combined));
+  if (!senderProfile && NO_PROFILE_SENDER_CLAIM_PATTERNS.some((pattern) => pattern.test(combined))) {
+    return true;
+  }
+  return false;
 }
-
-/** Block guarantees, fake social proof, and calendar claims even when a profile exists. */
-const ALWAYS_UNSUPPORTED_CLAIM_PATTERNS: RegExp[] = [
-  /\bi can guarantee\b/i,
-  /\bwe('ve| have) helped (hundreds|dozens|many) (of )?companies\b/i,
-  /\b(i'm|i am) available (tomorrow|next week|on \w+day)\b/i,
-  /\b(i'll|i will) (send|prepare) (you )?(a )?proposal\b/i,
-  /\bbook a demo\b/i,
-  /\blet'?s book a (demo|call)\b/i,
-];
 
 async function requestFollowUpEmail(
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[]
@@ -290,7 +301,7 @@ async function requestFollowUpEmail(
   const completion = await client.chat.completions.create({
     model,
     temperature: 0.35,
-    max_tokens: 450,
+    max_tokens: FOLLOW_UP_COMPLETION_MAX_TOKENS,
     response_format: { type: "json_object" },
     messages,
   });
@@ -312,7 +323,7 @@ async function requestFollowUpEmail(
 export async function generateLeadFollowUp(
   input: GenerateLeadFollowUpInput
 ): Promise<GenerateLeadFollowUpResult> {
-  const activities = selectActivitiesForIntelligence(input.activities);
+  const activities = selectActivitiesForAiContext(input.activities ?? []);
   const promptInput: GenerateLeadFollowUpInput = { ...input, activities };
   const userPrompt = buildUserPrompt(promptInput);
   const baseMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [

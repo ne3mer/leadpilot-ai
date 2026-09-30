@@ -1,7 +1,11 @@
 import "server-only";
 
-import type { LeadActivityType } from "@/lib/activity-types";
 import { leadActivityTypeLabels } from "@/lib/activity-types";
+import {
+  MAX_AI_ACTIVITY_CONTEXT,
+  selectActivitiesForAiContext,
+  type AiActivityContext,
+} from "@/lib/ai/activity-context";
 import { getDeepSeekChatModel, getDeepSeekClient } from "@/lib/ai/deepseek";
 import { extractJsonObject, parseLeadIntelligencePayload } from "@/lib/ai/validation";
 import { formatLeadTimestamp } from "@/lib/leads/format";
@@ -11,13 +15,10 @@ import {
   type SenderProfileForAI,
 } from "@/lib/sender-profile-types";
 
-export const MAX_INTELLIGENCE_ACTIVITIES = 20;
+/** @deprecated Use MAX_AI_ACTIVITY_CONTEXT */
+export const MAX_INTELLIGENCE_ACTIVITIES = MAX_AI_ACTIVITY_CONTEXT;
 
-export type LeadIntelligenceActivityContext = {
-  type: LeadActivityType;
-  content: string;
-  created_at: string;
-};
+export type LeadIntelligenceActivityContext = AiActivityContext;
 
 export type GenerateLeadIntelligenceInput = {
   lead: Pick<Lead, "name" | "company" | "status" | "created_at" | "updated_at">;
@@ -158,7 +159,7 @@ function buildUserPrompt(input: GenerateLeadIntelligenceInput): string {
 export function selectActivitiesForIntelligence(
   activities: LeadIntelligenceActivityContext[]
 ): LeadIntelligenceActivityContext[] {
-  return activities.slice(0, MAX_INTELLIGENCE_ACTIVITIES);
+  return selectActivitiesForAiContext(activities);
 }
 
 export async function generateLeadIntelligence(
