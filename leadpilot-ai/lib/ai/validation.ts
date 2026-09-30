@@ -89,8 +89,12 @@ const MAX_INTELLIGENCE_SUMMARY = 500;
 const MAX_INTELLIGENCE_NEXT_ACTION = 300;
 const MAX_INTELLIGENCE_APPROACH = 500;
 
-export function parseLeadIntelligenceRequestBody(body: unknown):
-  | { ok: true; data: { leadId: string } }
+export type LeadIdRequestBody = {
+  leadId: string;
+};
+
+export function parseLeadIdRequestBody(body: unknown):
+  | { ok: true; data: LeadIdRequestBody }
   | { ok: false; error: string } {
   if (!body || typeof body !== "object") {
     return { ok: false, error: "Invalid request body." };
@@ -104,6 +108,58 @@ export function parseLeadIntelligenceRequestBody(body: unknown):
   }
 
   return { ok: true, data: { leadId } };
+}
+
+export function parseLeadIntelligenceRequestBody(body: unknown):
+  | { ok: true; data: LeadIdRequestBody }
+  | { ok: false; error: string } {
+  return parseLeadIdRequestBody(body);
+}
+
+export type LeadPriorityExplanationPayload = {
+  explanation: string;
+  nextAction: string;
+};
+
+const MAX_PRIORITY_EXPLANATION = 600;
+const MAX_PRIORITY_NEXT_ACTION = 300;
+
+export function parseLeadPriorityExplanationRequestBody(body: unknown):
+  | { ok: true; data: LeadIdRequestBody }
+  | { ok: false; error: string } {
+  return parseLeadIdRequestBody(body);
+}
+
+export function parseLeadPriorityExplanationPayload(
+  raw: unknown
+): LeadPriorityExplanationPayload | null {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  const record = raw as Record<string, unknown>;
+  if (typeof record.explanation !== "string" || typeof record.nextAction !== "string") {
+    return null;
+  }
+
+  const explanation = record.explanation.trim();
+  const nextAction = record.nextAction.trim();
+
+  if (
+    explanation.length < 1 ||
+    explanation.length > MAX_PRIORITY_EXPLANATION ||
+    nextAction.length < 1 ||
+    nextAction.length > MAX_PRIORITY_NEXT_ACTION
+  ) {
+    return null;
+  }
+
+  const keys = Object.keys(record);
+  if (keys.length !== 2 || !keys.includes("explanation") || !keys.includes("nextAction")) {
+    return null;
+  }
+
+  return { explanation, nextAction };
 }
 
 export function parseLeadIntelligencePayload(raw: unknown): LeadIntelligencePayload | null {
