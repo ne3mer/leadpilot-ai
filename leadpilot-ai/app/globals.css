@@ -1,26 +1,312 @@
 @import "tailwindcss";
 
+/* -------------------------------------------------------------------------- */
+/* LeadPilot design tokens — Phase 12C-1 "Quiet Instrument"                   */
+/* -------------------------------------------------------------------------- */
+
 :root {
-  --background: #f6f8f6;
-  --foreground: #0b0f0c;
+  /* Background */
+  --lp-bg-page: #f5f4f1;
+  --lp-bg-surface: #ffffff;
+  --lp-bg-surface-subtle: #fafaf9;
+  --lp-bg-surface-elevated: #ffffff;
+
+  /* Text */
+  --lp-text-primary: #141413;
+  --lp-text-secondary: #5c5c59;
+  --lp-text-muted: #8a8a85;
+  --lp-text-inverse: #fafaf9;
+
+  /* Borders */
+  --lp-border-default: rgb(20 20 19 / 0.1);
+  --lp-border-subtle: rgb(20 20 19 / 0.06);
+  --lp-border-strong: rgb(20 20 19 / 0.18);
+
+  /* Accent — restrained forest */
+  --lp-accent: #1a6b4a;
+  --lp-accent-hover: #155a3e;
+  --lp-accent-muted: #e8f2ed;
+  --lp-accent-foreground: #fafaf9;
+
+  /* Semantic */
+  --lp-success: #1a6b4a;
+  --lp-success-muted: #e8f2ed;
+  --lp-warning: #9a6700;
+  --lp-warning-muted: #f5f0e0;
+  --lp-danger: #b42318;
+  --lp-danger-muted: #fcebea;
+
+  /* Priority */
+  --lp-priority-high-fg: #0f5132;
+  --lp-priority-high-bg: #e7f3ed;
+  --lp-priority-medium-fg: #7a5c00;
+  --lp-priority-medium-bg: #f5f0e0;
+  --lp-priority-low-fg: #525252;
+  --lp-priority-low-bg: #f0f0ef;
+
+  /* Status */
+  --lp-status-new-fg: #525252;
+  --lp-status-new-bg: #f0f0ef;
+  --lp-status-contacted-fg: #3d5c45;
+  --lp-status-contacted-bg: #eef3ef;
+  --lp-status-qualified-fg: #1a6b4a;
+  --lp-status-qualified-bg: #e8f2ed;
+  --lp-status-proposal-fg: #4a4a48;
+  --lp-status-proposal-bg: #eeedeb;
+  --lp-status-negotiation-fg: #7a5c00;
+  --lp-status-negotiation-bg: #f5f0e0;
+  --lp-status-won-fg: #0f5132;
+  --lp-status-won-bg: #dceee4;
+  --lp-status-lost-fg: #b42318;
+  --lp-status-lost-bg: #fcebea;
+
+  /* Typography scale */
+  --lp-text-display-size: 2rem;
+  --lp-text-display-leading: 1.15;
+  --lp-text-page-title-size: 1.75rem;
+  --lp-text-page-title-leading: 1.2;
+  --lp-text-section-title-size: 1.25rem;
+  --lp-text-section-title-leading: 1.3;
+  --lp-text-subsection-size: 1.0625rem;
+  --lp-text-subsection-leading: 1.35;
+  --lp-text-body-size: 0.9375rem;
+  --lp-text-body-leading: 1.5;
+  --lp-text-body-small-size: 0.875rem;
+  --lp-text-body-small-leading: 1.45;
+  --lp-text-metadata-size: 0.8125rem;
+  --lp-text-metadata-leading: 1.4;
+  --lp-text-caption-size: 0.75rem;
+  --lp-text-caption-leading: 1.35;
+
+  /* Spacing (8px grid) */
+  --lp-space-1: 0.25rem;
+  --lp-space-2: 0.5rem;
+  --lp-space-3: 0.75rem;
+  --lp-space-4: 1rem;
+  --lp-space-5: 1.25rem;
+  --lp-space-6: 1.5rem;
+  --lp-space-8: 2rem;
+  --lp-space-10: 2.5rem;
+  --lp-space-12: 3rem;
+  --lp-space-16: 4rem;
+  --lp-space-section: 3rem;
+  --lp-space-surface-padding: 1.25rem;
+  --lp-space-form-gap: 1rem;
+  --lp-space-table-row-y: 0.75rem;
+
+  /* Radius */
+  --lp-radius-sm: 0.375rem;
+  --lp-radius-md: 0.625rem;
+  --lp-radius-lg: 0.875rem;
+
+  /* Shadow — minimal */
+  --lp-shadow-none: none;
+  --lp-shadow-focus: 0 0 0 2px var(--lp-bg-page), 0 0 0 3px var(--lp-accent);
+  --lp-shadow-overlay: 0 8px 32px rgb(20 20 19 / 0.1);
+
+  /* Motion */
+  --lp-duration-fast: 120ms;
+  --lp-duration-normal: 180ms;
+  --lp-duration-slow: 280ms;
+  --lp-ease-default: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  /* Layout */
+  --lp-container-max: 80rem;
+  --lp-gutter-mobile: 1.25rem;
+  --lp-gutter-desktop: 2rem;
+
+  /* Control */
+  --lp-control-height: 2.5rem;
+
+  /* Legacy aliases (compatibility) */
+  --background: var(--lp-bg-page);
+  --foreground: var(--lp-text-primary);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-page: var(--lp-bg-page);
+  --color-surface: var(--lp-bg-surface);
+  --color-surface-subtle: var(--lp-bg-surface-subtle);
+  --color-surface-elevated: var(--lp-bg-surface-elevated);
+  --color-primary: var(--lp-text-primary);
+  --color-secondary: var(--lp-text-secondary);
+  --color-muted: var(--lp-text-muted);
+  --color-inverse: var(--lp-text-inverse);
+  --color-border: var(--lp-border-default);
+  --color-border-subtle: var(--lp-border-subtle);
+  --color-border-strong: var(--lp-border-strong);
+  --color-accent: var(--lp-accent);
+  --color-accent-hover: var(--lp-accent-hover);
+  --color-accent-muted: var(--lp-accent-muted);
+  --color-accent-foreground: var(--lp-accent-foreground);
+  --color-success: var(--lp-success);
+  --color-success-muted: var(--lp-success-muted);
+  --color-warning: var(--lp-warning);
+  --color-warning-muted: var(--lp-warning-muted);
+  --color-danger: var(--lp-danger);
+  --color-danger-muted: var(--lp-danger-muted);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --radius-sm: var(--lp-radius-sm);
+  --radius-md: var(--lp-radius-md);
+  --radius-lg: var(--lp-radius-lg);
 }
 
 html {
   scroll-behavior: smooth;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 * {
-  border-color: rgb(11 15 12 / 0.1);
+  border-color: var(--lp-border-default);
 }
 
 body {
-  background: #f7faf7;
-  color: var(--foreground);
+  background: var(--lp-bg-page);
+  color: var(--lp-text-primary);
+  font-size: var(--lp-text-body-size);
+  line-height: var(--lp-text-body-leading);
+}
+
+/* Focus */
+.lp-focus-ring:focus {
+  outline: none;
+}
+
+.lp-focus-ring:focus-visible {
+  box-shadow: var(--lp-shadow-focus);
+}
+
+/* Typography utilities */
+.lp-text-display {
+  font-size: var(--lp-text-display-size);
+  line-height: var(--lp-text-display-leading);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--lp-text-primary);
+}
+
+.lp-text-page-title {
+  font-size: var(--lp-text-page-title-size);
+  line-height: var(--lp-text-page-title-leading);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--lp-text-primary);
+}
+
+.lp-text-section-title {
+  font-size: var(--lp-text-section-title-size);
+  line-height: var(--lp-text-section-title-leading);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--lp-text-primary);
+}
+
+.lp-text-subsection {
+  font-size: var(--lp-text-subsection-size);
+  line-height: var(--lp-text-subsection-leading);
+  font-weight: 500;
+  color: var(--lp-text-primary);
+}
+
+.lp-text-body {
+  font-size: var(--lp-text-body-size);
+  line-height: var(--lp-text-body-leading);
+  color: var(--lp-text-primary);
+}
+
+.lp-text-body-small {
+  font-size: var(--lp-text-body-small-size);
+  line-height: var(--lp-text-body-small-leading);
+  color: var(--lp-text-secondary);
+}
+
+.lp-text-metadata {
+  font-size: var(--lp-text-metadata-size);
+  line-height: var(--lp-text-metadata-leading);
+  color: var(--lp-text-muted);
+}
+
+.lp-text-caption {
+  font-size: var(--lp-text-caption-size);
+  line-height: var(--lp-text-caption-leading);
+  color: var(--lp-text-muted);
+}
+
+/* Badge — priority */
+.lp-priority-high {
+  background-color: var(--lp-priority-high-bg);
+  color: var(--lp-priority-high-fg);
+}
+
+.lp-priority-medium {
+  background-color: var(--lp-priority-medium-bg);
+  color: var(--lp-priority-medium-fg);
+}
+
+.lp-priority-low {
+  background-color: var(--lp-priority-low-bg);
+  color: var(--lp-priority-low-fg);
+}
+
+/* Badge — status */
+.lp-status-new {
+  background-color: var(--lp-status-new-bg);
+  color: var(--lp-status-new-fg);
+}
+
+.lp-status-contacted {
+  background-color: var(--lp-status-contacted-bg);
+  color: var(--lp-status-contacted-fg);
+}
+
+.lp-status-qualified {
+  background-color: var(--lp-status-qualified-bg);
+  color: var(--lp-status-qualified-fg);
+}
+
+.lp-status-proposal {
+  background-color: var(--lp-status-proposal-bg);
+  color: var(--lp-status-proposal-fg);
+}
+
+.lp-status-negotiation {
+  background-color: var(--lp-status-negotiation-bg);
+  color: var(--lp-status-negotiation-fg);
+}
+
+.lp-status-won {
+  background-color: var(--lp-status-won-bg);
+  color: var(--lp-status-won-fg);
+}
+
+.lp-status-lost {
+  background-color: var(--lp-status-lost-bg);
+  color: var(--lp-status-lost-fg);
+}
+
+/* AI disclosure */
+.lp-ai-disclosure {
+  display: inline-flex;
+  align-items: center;
+  border-left: 2px solid var(--lp-border-strong);
+  padding-left: var(--lp-space-2);
+  font-size: var(--lp-text-caption-size);
+  line-height: var(--lp-text-caption-leading);
+  color: var(--lp-text-muted);
 }

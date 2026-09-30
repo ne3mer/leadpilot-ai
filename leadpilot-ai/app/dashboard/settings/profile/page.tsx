@@ -25,7 +25,7 @@ export default async function SenderProfileSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-transparent text-slate-950">
+    <div className="min-h-screen bg-page pb-20 text-primary md:pb-0">
       <SiteHeader sessionUser={{ email: user.email ?? "Signed in" }} />
       <Container className="py-8 sm:py-10">
         <SenderProfileForm initialProfile={profile} />

@@ -9,9 +9,9 @@ export function formatPriorityLevelLabel(level: LeadPriorityLevel): string {
 
 export function priorityLevelBadgeClassName(level: LeadPriorityLevel): string {
   const classes: Record<LeadPriorityLevel, string> = {
-    high: "bg-emerald-100 text-emerald-800",
-    medium: "bg-amber-100 text-amber-900",
-    low: "bg-zinc-100 text-zinc-700",
+    high: "lp-priority-high",
+    medium: "lp-priority-medium",
+    low: "lp-priority-low",
   };
   return classes[level];
 }

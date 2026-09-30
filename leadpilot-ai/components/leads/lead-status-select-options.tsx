@@ -31,13 +31,13 @@ export function LeadStatusSelectOptions({ idPrefix = "status" }: LeadStatusSelec
 
 export function leadStatusSelectClassName(status: LeadStatus) {
   const classes: Record<LeadStatus, string> = {
-    New: "bg-zinc-100 text-zinc-700",
-    Contacted: "bg-lime-100 text-lime-800",
-    Qualified: "bg-emerald-100 text-emerald-800",
-    "Proposal Sent": "bg-slate-100 text-slate-700",
-    Negotiation: "bg-amber-100 text-amber-800",
-    Won: "bg-emerald-200 text-emerald-900",
-    Lost: "bg-red-100 text-red-800",
+    New: "lp-status-new",
+    Contacted: "lp-status-contacted",
+    Qualified: "lp-status-qualified",
+    "Proposal Sent": "lp-status-proposal",
+    Negotiation: "lp-status-negotiation",
+    Won: "lp-status-won",
+    Lost: "lp-status-lost",
   };
 
   return classes[status];

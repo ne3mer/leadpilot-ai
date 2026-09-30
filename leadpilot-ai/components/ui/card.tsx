@@ -5,6 +5,16 @@ type CardProps = {
   className?: string;
 };
 
+/**
+ * Legacy elevated container — prefer {@link Surface} or plain {@link Section} in new work.
+ * Visual language updated to match tokens (no shadow by default).
+ */
 export function Card({ children, className }: CardProps) {
-  return <div className={cn("rounded-2xl border border-black/10 bg-white shadow-sm", className)}>{children}</div>;
+  return (
+    <div
+      className={cn("rounded-md border border-border bg-surface", className)}
+    >
+      {children}
+    </div>
+  );
 }

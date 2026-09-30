@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, UserPlus, Users, WandSparkles } from "lucide-react";
+import { Trash2, UserPlus, Users } from "lucide-react";
 import {
   createLeadAction,
   deleteLeadAction,
@@ -32,7 +32,13 @@ import {
   LeadStatusSelectOptions,
   leadStatusSelectClassName,
 } from "@/components/leads/lead-status-select-options";
-import { Card } from "@/components/ui/card";
+import { buttonClassName } from "@/components/ui/button";
+import {
+  fieldLabelClassName,
+  inputClassName,
+  selectClassName,
+} from "@/components/ui/input";
+import { typographyClass } from "@/lib/design-system/typography";
 import { leadStatuses, type Lead, type LeadStatus } from "@/lib/lead-types";
 
 type DashboardLeadsTableProps = {
@@ -215,43 +221,40 @@ export function DashboardLeadsTable({
   const isLoading = isPending && initialLeads.length === 0 && !loadError;
 
   return (
-    <section id="pipeline" className="min-w-0 scroll-mt-24" aria-label="Lead Pipeline">
-    <Card className="min-w-0 p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-medium text-black">Lead Pipeline</h2>
-          <p className="mt-1 text-xs text-slate-600">
-            Lifecycle: New → Contacted → Qualified → Proposal Sent → Negotiation → Won (or Lost)
+    <section id="pipeline" className="min-w-0 scroll-mt-24" aria-label="Lead pipeline">
+      <div className="mb-[var(--lp-space-6)] flex flex-wrap items-end justify-between gap-3">
+        <div className="min-w-0 max-w-prose">
+          <h2 className={typographyClass("sectionTitle")}>Pipeline</h2>
+          <p className={typographyClass("bodySmall", "mt-2")}>
+            New → Contacted → Qualified → Proposal Sent → Negotiation → Won or Lost
           </p>
         </div>
-        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-          {resultCountLabel}
-        </span>
+        <p className="lp-text-metadata tabular-nums text-muted">{resultCountLabel}</p>
       </div>
 
       {loadError ? (
-        <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+        <p className="mt-3 rounded-sm border border-danger/20 bg-danger-muted px-3 py-2 lp-text-body-small text-danger">
           {loadError}
         </p>
       ) : null}
 
       {actionError ? (
-        <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+        <p className="mt-3 rounded-sm border border-danger/20 bg-danger-muted px-3 py-2 lp-text-body-small text-danger">
           {actionError}
         </p>
       ) : null}
 
       {actionMessage ? (
-        <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+        <p className="mt-3 rounded-sm border border-border bg-surface-subtle px-3 py-2 lp-text-body-small text-secondary">
           {actionMessage}
         </p>
       ) : null}
 
       <div
         id="add-lead-form"
-        className="mt-4 grid gap-3 rounded-2xl border border-black/10 bg-slate-50 p-4 sm:grid-cols-2 md:grid-cols-5"
+        className="mt-[var(--lp-space-6)] grid gap-[var(--lp-space-form-gap)] rounded-md border border-border bg-surface-subtle p-[var(--lp-space-5)] sm:grid-cols-2 md:grid-cols-5"
       >
-        <label className="text-sm text-slate-700 sm:col-span-1 md:col-span-1">
+        <label className={`${fieldLabelClassName()} sm:col-span-1 md:col-span-1`}>
           Name
           <input
             ref={nameInputRef}
@@ -259,22 +262,22 @@ export function DashboardLeadsTable({
             onChange={(event) => setName(event.target.value)}
             placeholder="Lead name"
             disabled={isPending}
-            className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring disabled:opacity-60"
+            className={inputClassName("mt-2")}
           />
         </label>
 
-        <label className="text-sm text-slate-700 sm:col-span-1 md:col-span-1">
+        <label className={`${fieldLabelClassName()} sm:col-span-1 md:col-span-1`}>
           Company
           <input
             value={company}
             onChange={(event) => setCompany(event.target.value)}
             placeholder="Company"
             disabled={isPending}
-            className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring disabled:opacity-60"
+            className={inputClassName("mt-2")}
           />
         </label>
 
-        <label className="text-sm text-slate-700 sm:col-span-1 md:col-span-1">
+        <label className={`${fieldLabelClassName()} sm:col-span-1 md:col-span-1`}>
           Email
           <input
             type="email"
@@ -282,17 +285,17 @@ export function DashboardLeadsTable({
             onChange={(event) => setEmail(event.target.value)}
             placeholder="lead@company.com"
             disabled={isPending}
-            className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring disabled:opacity-60"
+            className={inputClassName("mt-2")}
           />
         </label>
 
-        <label className="text-sm text-slate-700 sm:col-span-1 md:col-span-1">
+        <label className={`${fieldLabelClassName()} sm:col-span-1 md:col-span-1`}>
           Status
           <select
             value={status}
             onChange={(event) => setStatus(event.target.value as LeadStatus)}
             disabled={isPending}
-            className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring disabled:opacity-60"
+            className={selectClassName("mt-2")}
           >
             <LeadStatusSelectOptions idPrefix="add-lead" />
           </select>
@@ -303,37 +306,37 @@ export function DashboardLeadsTable({
             type="button"
             onClick={handleAddLead}
             disabled={!isFormValid || isPending}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_-12px_rgba(22,163,74,0.65)] transition duration-300 enabled:hover:-translate-y-0.5 enabled:hover:shadow-[0_14px_28px_-14px_rgba(22,163,74,0.7)] disabled:cursor-not-allowed disabled:opacity-60"
+            className={buttonClassName("primary", "inline-flex w-full gap-2")}
           >
-            <UserPlus className="h-4 w-4" />
-            {isPending ? "Saving…" : "Add Lead"}
+            <UserPlus className="h-4 w-4" aria-hidden />
+            {isPending ? "Saving…" : "Add lead"}
           </button>
         </div>
       </div>
 
       {hasDuplicateEmail ? (
-        <p className="mt-2 text-xs text-amber-700">A lead with this email already exists.</p>
+        <p className="mt-2 lp-text-caption text-warning">A lead with this email already exists.</p>
       ) : null}
 
       {initialLeads.length > 0 ? (
-        <div className="mt-5 flex flex-col gap-3 lg:flex-row lg:items-end">
-          <label className="block flex-1 text-sm text-slate-700">
+        <div className="mt-[var(--lp-space-6)] flex flex-col gap-[var(--lp-space-form-gap)] border-t border-border pt-[var(--lp-space-6)] lg:flex-row lg:items-end">
+          <label className={`${fieldLabelClassName()} block flex-1`}>
             Search leads
             <input
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search by name, company, or email…"
-              className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
+              className={inputClassName("mt-2")}
             />
           </label>
 
-          <label className="block w-full text-sm text-slate-700 lg:w-48">
+          <label className={`${fieldLabelClassName()} block w-full lg:w-48`}>
             Status
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value as LeadStatusFilter)}
-              className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
+              className={selectClassName("mt-2")}
             >
               <option value="all">All statuses</option>
               {leadStatuses.map((item) => (
@@ -344,14 +347,14 @@ export function DashboardLeadsTable({
             </select>
           </label>
 
-          <label className="block w-full text-sm text-slate-700 lg:w-48">
+          <label className={`${fieldLabelClassName()} block w-full lg:w-48`}>
             Priority
             <select
               value={priorityFilter}
               onChange={(event) =>
                 setPriorityFilter(event.target.value as LeadPriorityFilter)
               }
-              className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
+              className={selectClassName("mt-2")}
             >
               {leadPriorityFilterOptions.map((option) => (
                 <option key={option} value={option}>
@@ -361,12 +364,12 @@ export function DashboardLeadsTable({
             </select>
           </label>
 
-          <label className="block w-full text-sm text-slate-700 lg:w-56">
+          <label className={`${fieldLabelClassName()} block w-full lg:w-56`}>
             Sort
             <select
               value={sortPreset}
               onChange={(event) => setSortPreset(event.target.value as LeadSortPreset)}
-              className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
+              className={selectClassName("mt-2")}
             >
               {(Object.keys(sortPresetLabels) as LeadSortPreset[]).map((preset) => (
                 <option key={preset} value={preset}>
@@ -380,7 +383,7 @@ export function DashboardLeadsTable({
             <button
               type="button"
               onClick={clearListFilters}
-              className="rounded-xl border border-black/15 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700 lg:mb-0.5"
+              className={buttonClassName("ghost", "lg:mb-0.5")}
             >
               Clear filters
             </button>
@@ -391,40 +394,38 @@ export function DashboardLeadsTable({
       <div className="mt-5 min-w-0 md:overflow-x-auto">
         {isLoading ? (
           <div
-            className="rounded-2xl border border-black/10 bg-slate-50 px-4 py-10 text-center text-sm text-slate-600"
+            className="py-[var(--lp-space-10)] text-center lp-text-body-small text-muted"
             aria-live="polite"
           >
             Loading your leads…
           </div>
         ) : initialLeads.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-black/15 bg-slate-50 px-6 py-12 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-              <Users className="h-6 w-6" />
-            </div>
-            <h3 className="mt-4 text-base font-semibold text-black">No leads yet</h3>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
+          <div className="py-[var(--lp-space-12)] text-center">
+            <Users className="mx-auto h-6 w-6 text-muted" aria-hidden />
+            <h3 className={typographyClass("subsection", "mt-4")}>No leads yet</h3>
+            <p className={typographyClass("bodySmall", "mx-auto mt-2 max-w-md")}>
               Add your first lead using the form above to start tracking pipeline status and
-              generating follow-up messages.
+              follow-ups.
             </p>
             <button
               type="button"
               onClick={focusAddLeadForm}
-              className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+              className={buttonClassName("primary", "mt-6 inline-flex gap-2")}
             >
-              <UserPlus className="h-4 w-4" />
+              <UserPlus className="h-4 w-4" aria-hidden />
               Add your first lead
             </button>
           </div>
         ) : visibleLeads.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-black/15 bg-slate-50 px-6 py-12 text-center">
-            <h3 className="text-base font-semibold text-black">No leads match your current filters.</h3>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
-              Try adjusting your search, status, or priority filter to see more leads.
+          <div className="py-[var(--lp-space-12)] text-center">
+            <h3 className={typographyClass("subsection")}>No leads match your filters</h3>
+            <p className={typographyClass("bodySmall", "mx-auto mt-2 max-w-md")}>
+              Try adjusting search, status, or priority to see more leads.
             </p>
             <button
               type="button"
               onClick={clearListFilters}
-              className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+              className={buttonClassName("secondary", "mt-6")}
             >
               Clear filters
             </button>
@@ -460,15 +461,15 @@ export function DashboardLeadsTable({
           </ul>
 
           <div className="hidden md:block overflow-x-auto">
-          <table className="min-w-[720px] w-full text-left text-sm text-slate-700">
-            <thead className="text-xs uppercase tracking-wide text-slate-500">
+          <table className="min-w-[720px] w-full text-left lp-text-body-small text-secondary">
+            <thead className="border-b border-border lp-text-caption text-muted">
               <tr>
-                <th className="px-3 py-3">Name</th>
-                <th className="px-3 py-3">Company</th>
-                <th className="px-3 py-3">Email</th>
-                <th className="px-3 py-3">Status</th>
-                <th className="px-3 py-3">Priority</th>
-                <th className="px-3 py-3 text-right">Action</th>
+                <th className="px-3 py-[var(--lp-space-table-row-y)] font-medium">Name</th>
+                <th className="px-3 py-[var(--lp-space-table-row-y)] font-medium">Company</th>
+                <th className="px-3 py-[var(--lp-space-table-row-y)] font-medium">Email</th>
+                <th className="px-3 py-[var(--lp-space-table-row-y)] font-medium">Status</th>
+                <th className="px-3 py-[var(--lp-space-table-row-y)] font-medium">Priority</th>
+                <th className="px-3 py-[var(--lp-space-table-row-y)] text-right font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -476,17 +477,17 @@ export function DashboardLeadsTable({
                 const listPriority = getLeadListPriorityResult(lead, leadActivitiesByLeadId);
                 const rowStatusId = `row-status-${lead.id}`;
                 return (
-                <tr key={lead.id} className="border-t border-black/10">
-                  <td className="px-3 py-3 font-medium text-black">
+                <tr key={lead.id} className="border-t border-border">
+                  <td className="px-3 py-[var(--lp-space-table-row-y)] font-medium text-primary">
                     <Link
                       href={`/dashboard/leads/${lead.id}`}
-                      className="text-emerald-800 underline-offset-2 transition hover:text-emerald-600 hover:underline"
+                      className="lp-focus-ring rounded-sm text-primary underline-offset-2 hover:text-accent hover:underline"
                     >
                       {lead.name}
                     </Link>
                   </td>
-                  <td className="px-3 py-3 text-slate-600">{lead.company}</td>
-                  <td className="px-3 py-3 text-slate-600">{lead.email}</td>
+                  <td className="px-3 py-[var(--lp-space-table-row-y)]">{lead.company}</td>
+                  <td className="px-3 py-[var(--lp-space-table-row-y)] break-all">{lead.email}</td>
                   <td className="px-3 py-3">
                     <label htmlFor={rowStatusId} className="sr-only">
                       Pipeline status for {lead.name}
@@ -499,7 +500,7 @@ export function DashboardLeadsTable({
                         handleStatusChange(lead.id, event.target.value as LeadStatus)
                       }
                       aria-label={`Pipeline status for ${lead.name}, currently ${lead.status}`}
-                      className={`max-w-full rounded-xl border border-black/15 bg-white px-2.5 py-1.5 text-xs font-medium outline-none ring-emerald-300/60 transition focus:ring disabled:opacity-60 ${leadStatusSelectClassName(lead.status)}`}
+                      className={`lp-focus-ring max-w-full rounded-sm border border-border bg-surface px-2.5 py-1.5 lp-text-caption font-medium disabled:opacity-60 ${leadStatusSelectClassName(lead.status)}`}
                     >
                       <LeadStatusSelectOptions idPrefix={`row-${lead.id}`} />
                     </select>
@@ -513,13 +514,13 @@ export function DashboardLeadsTable({
                   <td className="px-3 py-3 text-right">
                     {confirmDeleteLeadId === lead.id ? (
                       <div
-                        className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-left"
+                        className="rounded-sm border border-danger/20 bg-danger-muted px-3 py-2 text-left"
                         role="alertdialog"
                         aria-labelledby={`delete-lead-${lead.id}`}
                       >
                         <p
                           id={`delete-lead-${lead.id}`}
-                          className="text-xs text-red-900"
+                          className="lp-text-caption text-danger"
                         >
                           Delete {lead.name}? This cannot be undone.
                         </p>
@@ -528,7 +529,7 @@ export function DashboardLeadsTable({
                             type="button"
                             disabled={isPending}
                             onClick={() => handleDeleteLead(lead.id)}
-                            className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                            className={buttonClassName("danger", "px-3 py-1.5 text-xs")}
                           >
                             {isPending ? "Deleting…" : "Confirm delete"}
                           </button>
@@ -536,7 +537,7 @@ export function DashboardLeadsTable({
                             type="button"
                             disabled={isPending}
                             onClick={() => setConfirmDeleteLeadId(null)}
-                            className="rounded-lg border border-black/15 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-60"
+                            className={buttonClassName("secondary", "px-3 py-1.5 text-xs")}
                           >
                             Cancel
                           </button>
@@ -550,9 +551,8 @@ export function DashboardLeadsTable({
                             setConfirmDeleteLeadId(null);
                             onUseLead?.(lead);
                           }}
-                          className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
+                          className={buttonClassName("secondary", "px-2.5 py-1.5 text-xs")}
                         >
-                          <WandSparkles className="h-3.5 w-3.5" />
                           Use in AI
                         </button>
                         <button
@@ -562,9 +562,9 @@ export function DashboardLeadsTable({
                             setConfirmDeleteLeadId(lead.id);
                             setActionError(null);
                           }}
-                          className="inline-flex items-center gap-1 rounded-lg border border-black/15 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700 disabled:opacity-60"
+                          className={buttonClassName("ghost", "px-2.5 py-1.5 text-xs text-danger hover:bg-danger-muted disabled:opacity-60")}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-3.5 w-3.5" aria-hidden />
                           Delete
                         </button>
                       </div>
@@ -579,7 +579,6 @@ export function DashboardLeadsTable({
           </>
         )}
       </div>
-    </Card>
     </section>
   );
 }

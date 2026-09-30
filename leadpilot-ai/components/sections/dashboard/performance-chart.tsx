@@ -12,26 +12,26 @@ import {
   YAxis,
 } from "recharts";
 import type { LeadPerformanceTrendPoint } from "@/lib/leads/chart-data";
-import { Card } from "@/components/ui/card";
+import { typographyClass } from "@/lib/design-system/typography";
 
 type DashboardPerformanceChartProps = {
   data: LeadPerformanceTrendPoint[] | null;
   error?: string | null;
 };
 
-function ChartSkeleton() {
+const CHART_ACCENT = "var(--lp-accent)";
+const CHART_PRIMARY = "var(--lp-text-primary)";
+const CHART_MUTED = "var(--lp-text-muted)";
+const CHART_BORDER = "var(--lp-border-subtle)";
+
+function ChartPlaceholder() {
   return (
     <div
-      className="flex h-full min-h-[18rem] w-full min-w-0 items-end gap-2 rounded-xl border border-black/5 bg-slate-50 px-4 py-6"
-      aria-hidden
+      className="flex h-full min-h-[14rem] w-full min-w-0 items-center justify-center rounded-sm border border-border bg-surface-subtle"
+      role="status"
+      aria-live="polite"
     >
-      {[40, 55, 48, 62, 58, 72].map((height, index) => (
-        <div
-          key={index}
-          className="flex-1 rounded-t-md bg-gradient-to-t from-emerald-200/80 to-emerald-100/40"
-          style={{ height: `${height}%` }}
-        />
-      ))}
+      <p className="lp-text-body-small text-muted">Loading trend…</p>
     </div>
   );
 }
@@ -48,56 +48,76 @@ export function DashboardPerformanceChart({ data, error }: DashboardPerformanceC
   const isClient = useIsClient();
 
   return (
-    <Card className="p-5">
-      <h2 className="text-lg font-medium text-black">Lead Performance Trend</h2>
-      <p className="mt-1 text-sm text-slate-600">
-        Leads created and Won outcomes by month (last 6 months, UTC). Won uses current
-        status only.
-      </p>
+    <section aria-label="Lead performance trend" className="min-w-0">
+      <header className="mb-[var(--lp-space-6)] max-w-prose">
+        <h2 className={typographyClass("sectionTitle")}>Performance trend</h2>
+        <p className={typographyClass("bodySmall", "mt-2")}>
+          Leads created and Won outcomes by month (last 6 months, UTC). Won reflects current
+          status only.
+        </p>
+      </header>
 
       {error ? (
-        <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+        <p className="rounded-sm border border-danger/20 bg-danger-muted px-3 py-2 lp-text-body-small text-danger">
           {error}
         </p>
       ) : null}
 
-      <div className="mt-6 h-72 min-h-[18rem] w-full min-w-0">
+      <div className="h-64 min-h-[14rem] w-full min-w-0 sm:h-72">
         {error ? null : isClient && data ? (
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" />
-              <XAxis dataKey="month" stroke="#475569" />
-              <YAxis allowDecimals={false} stroke="#475569" />
+            <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <CartesianGrid stroke={CHART_BORDER} strokeDasharray="4 4" vertical={false} />
+              <XAxis
+                dataKey="month"
+                tick={{ fill: CHART_MUTED, fontSize: 12 }}
+                axisLine={{ stroke: CHART_BORDER }}
+                tickLine={false}
+              />
+              <YAxis
+                allowDecimals={false}
+                tick={{ fill: CHART_MUTED, fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+                width={32}
+              />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#ffffff",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "12px",
+                  backgroundColor: "var(--lp-bg-surface)",
+                  border: `1px solid ${CHART_BORDER}`,
+                  borderRadius: "var(--lp-radius-sm)",
+                  fontSize: 13,
+                  color: CHART_PRIMARY,
                 }}
               />
-              <Legend />
+              <Legend
+                wrapperStyle={{ fontSize: 12, color: CHART_MUTED, paddingTop: 12 }}
+                iconType="plainline"
+              />
               <Line
                 type="monotone"
                 name="Leads created"
                 dataKey="leads"
-                stroke="#111827"
-                strokeWidth={3}
+                stroke={CHART_PRIMARY}
+                strokeWidth={1.5}
                 dot={false}
+                activeDot={{ r: 3 }}
               />
               <Line
                 type="monotone"
                 name="Won (current status)"
                 dataKey="won"
-                stroke="#16a34a"
-                strokeWidth={3}
+                stroke={CHART_ACCENT}
+                strokeWidth={1.5}
                 dot={false}
+                activeDot={{ r: 3 }}
               />
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <ChartSkeleton />
+          <ChartPlaceholder />
         )}
       </div>
-    </Card>
+    </section>
   );
 }

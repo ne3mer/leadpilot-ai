@@ -1,18 +1,25 @@
 import type { ComponentPropsWithoutRef } from "react";
 import { cn } from "@/lib/utils";
 
-type ButtonVariant = "primary" | "secondary" | "dark";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "dark";
+
+const buttonBaseClassName =
+  "inline-flex items-center justify-center gap-2 rounded-sm px-4 py-2 text-sm font-medium transition-[background-color,border-color,color,box-shadow] duration-[var(--lp-duration-fast)] ease-[var(--lp-ease-default)] lp-focus-ring disabled:pointer-events-none disabled:opacity-50";
+
+const buttonVariantClassNames: Record<ButtonVariant, string> = {
+  primary:
+    "border border-transparent bg-accent text-accent-foreground hover:bg-accent-hover",
+  secondary:
+    "border border-border bg-surface text-primary hover:bg-surface-subtle",
+  ghost: "border border-transparent bg-transparent text-secondary hover:bg-surface-subtle hover:text-primary",
+  danger:
+    "border border-transparent bg-danger-muted text-danger hover:border-[color:var(--lp-danger)]/25",
+  /** @deprecated Prefer `secondary` in app UI — kept for marketing/pricing compatibility */
+  dark: "border border-transparent bg-primary text-inverse hover:bg-accent",
+};
 
 export function buttonClassName(variant: ButtonVariant = "primary", className?: string) {
-  return cn(
-    "inline-flex items-center justify-center rounded-full px-7 py-3.5 text-sm font-semibold transition duration-300",
-    variant === "primary" &&
-      "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-[0_12px_28px_-12px_rgba(22,163,74,0.7)] hover:-translate-y-0.5 hover:shadow-[0_18px_34px_-14px_rgba(22,163,74,0.75)]",
-    variant === "secondary" &&
-      "border border-black/15 bg-white/90 text-black hover:-translate-y-0.5 hover:border-emerald-500 hover:text-emerald-700",
-    variant === "dark" && "bg-black text-white hover:bg-emerald-700",
-    className
-  );
+  return cn(buttonBaseClassName, buttonVariantClassNames[variant], className);
 }
 
 type ButtonProps = ComponentPropsWithoutRef<"button"> & {

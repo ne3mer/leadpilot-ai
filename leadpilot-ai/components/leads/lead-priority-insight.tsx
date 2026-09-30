@@ -126,7 +126,7 @@ export function LeadPriorityInsight({
 
       {insight ? (
         <div
-          className={`mt-2 min-w-0 space-y-2 rounded-lg border border-violet-100 bg-violet-50/50 text-slate-700 ${dashboardRow ? "px-2.5 py-2 text-xs" : "rounded-xl border-emerald-100 bg-emerald-50/60 px-3 py-2.5 text-sm"}`}
+          className={`mt-2 min-w-0 space-y-2 rounded-sm border border-border bg-surface-subtle text-secondary ${dashboardRow ? "px-2.5 py-2 lp-text-caption" : "px-3 py-2.5 lp-text-body-small"}`}
           aria-live="polite"
         >
           <AiGeneratedLabel className="mb-1" />

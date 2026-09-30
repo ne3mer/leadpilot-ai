@@ -4,7 +4,7 @@ import { useState } from "react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Container } from "@/components/ui/container";
 import { DashboardAiMessagePanel } from "@/components/sections/dashboard/ai-message-panel";
-import { DashboardHeroSection } from "@/components/sections/dashboard/dashboard-hero";
+import { DashboardPageHeader } from "@/components/sections/dashboard/dashboard-hero";
 import { DashboardLeadsTable } from "@/components/sections/dashboard/leads-table";
 import { DashboardPerformanceChart } from "@/components/sections/dashboard/performance-chart";
 import { DashboardPriorityLeads } from "@/components/sections/dashboard/priority-leads";
@@ -45,10 +45,11 @@ export function DashboardShell({
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   return (
-    <div className="min-h-screen bg-transparent text-slate-950">
+    <div className="min-h-screen bg-page text-primary pb-20 md:pb-0">
       <SiteHeader sessionUser={{ email: userLabel }} />
-      <Container className="flex flex-col gap-6 py-8 sm:py-10">
-        <DashboardHeroSection userLabel={userLabel} />
+      <Container className="flex flex-col gap-[var(--lp-space-section)] py-[var(--lp-space-8)] sm:py-[var(--lp-space-10)]">
+        <DashboardPageHeader userLabel={userLabel} />
+
         <DashboardStatsOverview metrics={metrics} error={metricsError} />
 
         <DashboardPriorityLeads items={priorityLeads} error={priorityLeadsError} />
@@ -60,7 +61,7 @@ export function DashboardShell({
           onUseLead={setSelectedLead}
         />
 
-        <div className="grid min-w-0 gap-6 lg:grid-cols-5">
+        <div className="grid min-w-0 gap-[var(--lp-space-section)] border-t border-border pt-[var(--lp-space-section)] lg:grid-cols-5">
           <div className="min-w-0 lg:col-span-3">
             <DashboardPerformanceChart data={performanceTrend} error={chartError} />
           </div>
@@ -69,6 +70,7 @@ export function DashboardShell({
               key={selectedLead?.id ?? "default-ai-message-panel"}
               selectedLead={selectedLead}
               hasSenderProfile={hasSenderProfile}
+              layout="compact"
             />
           </div>
         </div>

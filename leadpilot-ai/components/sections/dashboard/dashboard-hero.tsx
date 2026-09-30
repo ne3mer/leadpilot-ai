@@ -1,27 +1,34 @@
-import { Card } from "@/components/ui/card";
+import { typographyClass } from "@/lib/design-system/typography";
 
 type DashboardHeroSectionProps = {
   userLabel?: string;
 };
 
-export function DashboardHeroSection({ userLabel }: DashboardHeroSectionProps) {
+function displayNameFromEmail(email: string): string {
+  const local = email.split("@")[0]?.trim() ?? "";
+  if (!local) {
+    return "there";
+  }
+  const segment = local.split(/[._-]/)[0] ?? local;
+  return segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase();
+}
+
+export function DashboardPageHeader({ userLabel }: DashboardHeroSectionProps) {
+  const name = userLabel ? displayNameFromEmail(userLabel) : "there";
+
   return (
-    <Card className="relative overflow-hidden rounded-3xl p-7">
-      <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-emerald-500/15 blur-3xl" />
-      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-emerald-700">
-        LeadPilot Command Center
-      </p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight text-black md:text-4xl">
-        Dashboard
-      </h1>
-      <p className="mt-3 max-w-2xl text-slate-600">
-        Track lead velocity, conversion performance, and AI-generated actions.
-      </p>
-      {userLabel ? (
-        <p className="mt-4 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">
-          Signed in as {userLabel}
-        </p>
-      ) : null}
-    </Card>
+    <header className="min-w-0 pb-[var(--lp-space-2)]">
+      <h1 className={typographyClass("pageTitle")}>Good morning, {name}</h1>
+      <p className={cnBody()}>Here&apos;s what needs your attention.</p>
+    </header>
   );
+}
+
+function cnBody() {
+  return typographyClass("bodySmall", "mt-2 max-w-prose");
+}
+
+/** @deprecated Use DashboardPageHeader — kept for import compatibility during migration */
+export function DashboardHeroSection(props: DashboardHeroSectionProps) {
+  return <DashboardPageHeader {...props} />;
 }
