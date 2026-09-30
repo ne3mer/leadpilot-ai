@@ -7,9 +7,11 @@ import { DashboardAiMessagePanel } from "@/components/sections/dashboard/ai-mess
 import { DashboardHeroSection } from "@/components/sections/dashboard/dashboard-hero";
 import { DashboardLeadsTable } from "@/components/sections/dashboard/leads-table";
 import { DashboardPerformanceChart } from "@/components/sections/dashboard/performance-chart";
+import { DashboardPriorityLeads } from "@/components/sections/dashboard/priority-leads";
 import { DashboardStatsOverview } from "@/components/sections/dashboard/stats-overview";
 import type { LeadPerformanceTrendPoint } from "@/lib/leads/chart-data";
 import type { LeadDashboardMetrics } from "@/lib/leads/metrics";
+import type { DashboardPriorityLeadItem } from "@/lib/leads/priority-dashboard";
 import type { Lead } from "@/lib/lead-types";
 
 type DashboardShellProps = {
@@ -18,6 +20,8 @@ type DashboardShellProps = {
   metricsError?: string | null;
   performanceTrend: LeadPerformanceTrendPoint[] | null;
   chartError?: string | null;
+  priorityLeads: DashboardPriorityLeadItem[];
+  priorityLeadsError?: string | null;
   userLabel: string;
   leadsError?: string | null;
 };
@@ -28,6 +32,8 @@ export function DashboardShell({
   metricsError,
   performanceTrend,
   chartError,
+  priorityLeads,
+  priorityLeadsError,
   userLabel,
   leadsError,
 }: DashboardShellProps) {
@@ -39,6 +45,8 @@ export function DashboardShell({
       <Container className="flex flex-col gap-6 py-8 sm:py-10">
         <DashboardHeroSection userLabel={userLabel} />
         <DashboardStatsOverview metrics={metrics} error={metricsError} />
+
+        <DashboardPriorityLeads items={priorityLeads} error={priorityLeadsError} />
 
         <div className="grid gap-6 lg:grid-cols-5">
           <div className="lg:col-span-3">

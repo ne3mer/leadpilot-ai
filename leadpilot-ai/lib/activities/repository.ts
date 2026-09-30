@@ -14,6 +14,24 @@ function mapActivity(row: Database["public"]["Tables"]["lead_activities"]["Row"]
   return row;
 }
 
+/** All activities for the signed-in user (single query; RLS-scoped). */
+export async function listActivitiesForCurrentUser(
+  supabase: SupabaseServerClient
+): Promise<LeadActivity[]> {
+  await requireAuthenticatedUser(supabase);
+
+  const { data, error } = await supabase
+    .from("lead_activities")
+    .select(activityColumns)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error("Unable to load activities.");
+  }
+
+  return (data ?? []).map(mapActivity);
+}
+
 export async function getActivitiesForLeadForCurrentUser(
   supabase: SupabaseServerClient,
   leadId: string

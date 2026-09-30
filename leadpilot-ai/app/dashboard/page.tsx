@@ -1,10 +1,16 @@
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/app/dashboard/dashboard-shell";
+import { listActivitiesForCurrentUser } from "@/lib/activities/repository";
 import {
   computeLeadPerformanceTrend,
   type LeadPerformanceTrendPoint,
 } from "@/lib/leads/chart-data";
 import { computeLeadMetrics, type LeadDashboardMetrics } from "@/lib/leads/metrics";
+import {
+  buildDashboardPriorityLeads,
+  groupActivitiesByLeadId,
+  type DashboardPriorityLeadItem,
+} from "@/lib/leads/priority-dashboard";
 import { listLeadsForCurrentUser } from "@/lib/leads/repository";
 import type { Lead } from "@/lib/lead-types";
 import { createClient } from "@/lib/supabase/server";
@@ -27,6 +33,8 @@ export default async function DashboardPage() {
   let metricsError: string | null = null;
   let performanceTrend: LeadPerformanceTrendPoint[] | null = null;
   let chartError: string | null = null;
+  let priorityLeads: DashboardPriorityLeadItem[] = [];
+  let priorityLeadsError: string | null = null;
 
   try {
     initialLeads = await listLeadsForCurrentUser(supabase);
@@ -37,6 +45,18 @@ export default async function DashboardPage() {
     leadsError = message;
     metricsError = message;
     chartError = message;
+    priorityLeadsError = message;
+  }
+
+  if (!leadsError) {
+    try {
+      const activities = await listActivitiesForCurrentUser(supabase);
+      const activitiesByLeadId = groupActivitiesByLeadId(activities);
+      priorityLeads = buildDashboardPriorityLeads(initialLeads, activitiesByLeadId);
+    } catch (error) {
+      priorityLeadsError =
+        error instanceof Error ? error.message : "Unable to load priority leads.";
+    }
   }
 
   return (
@@ -46,6 +66,8 @@ export default async function DashboardPage() {
       metricsError={metricsError}
       performanceTrend={performanceTrend}
       chartError={chartError}
+      priorityLeads={priorityLeads}
+      priorityLeadsError={priorityLeadsError}
       userLabel={user.email ?? "Signed in"}
       leadsError={leadsError}
     />
