@@ -15,6 +15,7 @@ import {
 import type { LeadPriorityActivityInput } from "@/lib/leads/priority-score";
 import { listLeadsForCurrentUser } from "@/lib/leads/repository";
 import type { Lead } from "@/lib/lead-types";
+import { getSenderProfileForCurrentUser } from "@/lib/sender-profile/repository";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -38,6 +39,7 @@ export default async function DashboardPage() {
   let priorityLeads: DashboardPriorityLeadItem[] = [];
   let priorityLeadsError: string | null = null;
   let leadActivitiesByLeadId: Record<string, LeadPriorityActivityInput[]> = {};
+  let hasSenderProfile = false;
 
   try {
     initialLeads = await listLeadsForCurrentUser(supabase);
@@ -53,7 +55,11 @@ export default async function DashboardPage() {
 
   if (!leadsError) {
     try {
-      const activities = await listActivitiesForCurrentUser(supabase);
+      const [activities, profile] = await Promise.all([
+        listActivitiesForCurrentUser(supabase),
+        getSenderProfileForCurrentUser(supabase),
+      ]);
+      hasSenderProfile = profile !== null;
       const activitiesByLeadId = groupActivitiesByLeadId(activities);
       leadActivitiesByLeadId = activitiesByLeadIdToRecord(activitiesByLeadId);
       priorityLeads = buildDashboardPriorityLeads(initialLeads, activitiesByLeadId);
@@ -73,6 +79,7 @@ export default async function DashboardPage() {
       priorityLeads={priorityLeads}
       priorityLeadsError={priorityLeadsError}
       leadActivitiesByLeadId={leadActivitiesByLeadId}
+      hasSenderProfile={hasSenderProfile}
       userLabel={user.email ?? "Signed in"}
       leadsError={leadsError}
     />

@@ -123,9 +123,18 @@ export function LeadActivityPanel({ leadId, initialActivities }: LeadActivityPan
   }
 
   return (
-    <Card className="p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-medium text-black">Activity</h2>
+    <Card className="min-w-0 p-5 sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+            4 · Activity
+          </p>
+          <h2 className="mt-1 text-lg font-medium text-black">Activities</h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Record a note, email, or call. Edit or delete entries here—the timeline above stays
+            chronological.
+          </p>
+        </div>
         {!showForm ? (
           <button
             type="button"

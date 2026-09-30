@@ -120,7 +120,7 @@ export function LeadPriorityInsight({
 
       {showHelper ? (
         <p className="mt-2 text-sm text-slate-500">
-          Optional: generate an AI explanation of why this lead deserves attention.
+          On demand: AI explanation of why this lead deserves attention and a suggested next step.
         </p>
       ) : null}
 
@@ -135,7 +135,7 @@ export function LeadPriorityInsight({
             {insight.explanation}
           </p>
           <p className="break-words">
-            <span className="font-medium text-slate-900">Next: </span>
+            <span className="font-medium text-slate-900">Suggested next step: </span>
             {insight.nextAction}
           </p>
         </div>

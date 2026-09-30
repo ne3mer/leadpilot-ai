@@ -18,34 +18,18 @@ export function LeadPrioritySummary({
 
   return (
     <div className="min-w-0">
-      <div className="flex flex-wrap items-center gap-3">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-slate-500">
-            Priority score
-          </p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums text-black">
-            {priority.score}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs uppercase tracking-wide text-slate-500">
-            Priority level
-          </p>
-          <div className="mt-1">
-            <LeadPriorityBadge
-              score={priority.score}
-              priority={priority.priority}
-              size="md"
-            />
-          </div>
-        </div>
+      <p className="text-xs uppercase tracking-wide text-slate-500">Priority</p>
+      <div className="mt-2">
+        <LeadPriorityBadge
+          score={priority.score}
+          priority={priority.priority}
+          size="md"
+        />
       </div>
 
       {displayReasons.length > 0 ? (
         <div className="mt-4 min-w-0">
-          <p className="text-xs uppercase tracking-wide text-slate-500">
-            Top reasons
-          </p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">Top reasons</p>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
             {displayReasons.map((reason) => (
               <li key={reason} className="break-words">

@@ -10,8 +10,10 @@ import {
   LeadStatusSelectOptions,
   leadStatusSelectClassName,
 } from "@/components/leads/lead-status-select-options";
+import { LeadDetailWorkflowHeader } from "@/components/leads/lead-detail-workflow-header";
 import { LeadPriorityInsight } from "@/components/leads/lead-priority-insight";
 import { LeadPrioritySummary } from "@/components/leads/lead-priority-summary";
+import { SenderProfileAiCta } from "@/components/leads/sender-profile-ai-cta";
 import { AiLeadIntelligencePanel } from "@/components/sections/dashboard/ai-lead-intelligence-panel";
 import { DashboardAiMessagePanel } from "@/components/sections/dashboard/ai-message-panel";
 import { LeadActivityPanel } from "@/components/sections/dashboard/lead-activity-panel";
@@ -26,6 +28,7 @@ type LeadDetailPanelProps = {
   lead: Lead;
   activities: LeadActivity[];
   priorityResult: LeadPriorityScoreResult;
+  hasSenderProfile: boolean;
 };
 
 type FormState = {
@@ -44,7 +47,12 @@ function toFormState(lead: Lead): FormState {
   };
 }
 
-export function LeadDetailPanel({ lead, activities, priorityResult }: LeadDetailPanelProps) {
+export function LeadDetailPanel({
+  lead,
+  activities,
+  priorityResult,
+  hasSenderProfile,
+}: LeadDetailPanelProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<FormState>(() => toFormState(lead));
@@ -139,10 +147,12 @@ export function LeadDetailPanel({ lead, activities, priorityResult }: LeadDetail
         </div>
       </div>
 
-      <Card className="p-6 sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
-          Lead Detail
-        </p>
+      <Card className="min-w-0 p-6 sm:p-8">
+        <LeadDetailWorkflowHeader
+          step="1 · Lead"
+          title="Lead information"
+          description="Review core information for this lead before prioritizing and outreach."
+        />
 
         {successMessage ? (
           <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
@@ -270,18 +280,23 @@ export function LeadDetailPanel({ lead, activities, priorityResult }: LeadDetail
       </Card>
 
       <Card className="min-w-0 p-6 sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
-          Lead priority
-        </p>
-        <p className="mt-2 text-sm text-slate-600">
-          Deterministic score from pipeline status and recorded activity (not AI-generated).
-        </p>
+        <LeadDetailWorkflowHeader
+          step="2 · Priority"
+          title="Priority"
+          description="Understand urgency and why this lead matters. The score is deterministic from pipeline status and activity—not AI-generated."
+        />
         <div className="mt-5 min-w-0">
           <LeadPrioritySummary priority={priorityResult} />
         </div>
         <div className="mt-6 min-w-0 border-t border-black/10 pt-5">
-          <p className="mb-3 text-sm font-medium text-slate-800">AI priority insight</p>
-          <LeadPriorityInsight leadId={lead.id} />
+          <h3 className="text-sm font-medium text-slate-800">AI priority insight</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Why this lead deserves attention and what to do next.
+          </p>
+          <SenderProfileAiCta hasSenderProfile={hasSenderProfile} className="mt-2" />
+          <div className="mt-3">
+            <LeadPriorityInsight leadId={lead.id} />
+          </div>
         </div>
       </Card>
 
@@ -289,9 +304,18 @@ export function LeadDetailPanel({ lead, activities, priorityResult }: LeadDetail
 
       <LeadActivityPanel leadId={lead.id} initialActivities={activities} />
 
-      <AiLeadIntelligencePanel key={`intel-${lead.id}`} lead={lead} />
+      <AiLeadIntelligencePanel
+        key={`intel-${lead.id}`}
+        lead={lead}
+        hasSenderProfile={hasSenderProfile}
+      />
 
-      <DashboardAiMessagePanel key={`ai-${lead.id}`} selectedLead={lead} />
+      <DashboardAiMessagePanel
+        key={`ai-${lead.id}`}
+        selectedLead={lead}
+        hasSenderProfile={hasSenderProfile}
+        workflowStep="5 · Follow-up"
+      />
     </div>
   );
 }

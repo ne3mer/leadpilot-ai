@@ -7,6 +7,7 @@ import { getActivitiesForLeadForCurrentUser } from "@/lib/activities/repository"
 import { computeLeadPriorityScore } from "@/lib/leads/priority-score";
 import type { LeadPriorityScoreResult } from "@/lib/leads/priority-types";
 import { getLeadByIdForCurrentUser } from "@/lib/leads/repository";
+import { getSenderProfileForCurrentUser } from "@/lib/sender-profile/repository";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -39,8 +40,14 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
   }
 
   let activities: LeadActivity[] = [];
+  let hasSenderProfile = false;
   try {
-    activities = await getActivitiesForLeadForCurrentUser(supabase, lead.id);
+    const [loadedActivities, profile] = await Promise.all([
+      getActivitiesForLeadForCurrentUser(supabase, lead.id),
+      getSenderProfileForCurrentUser(supabase),
+    ]);
+    activities = loadedActivities;
+    hasSenderProfile = profile !== null;
   } catch {
     notFound();
   }
@@ -69,6 +76,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
           lead={lead}
           activities={activities}
           priorityResult={priorityResult}
+          hasSenderProfile={hasSenderProfile}
         />
       </Container>
     </div>

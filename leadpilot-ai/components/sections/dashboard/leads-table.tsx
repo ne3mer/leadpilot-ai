@@ -11,6 +11,7 @@ import {
   updateLeadStatusAction,
 } from "@/lib/leads/actions";
 import { clearLegacyLocalLeads, readLegacyLocalLeads } from "@/lib/leads/local-storage";
+import { LeadPipelineMobileCard } from "@/components/leads/lead-pipeline-mobile-card";
 import { LeadPriorityBadge } from "@/components/leads/lead-priority-badge";
 import {
   applyLeadListView,
@@ -387,7 +388,7 @@ export function DashboardLeadsTable({
         </div>
       ) : null}
 
-      <div className="mt-5 min-w-0 overflow-x-auto">
+      <div className="mt-5 min-w-0 md:overflow-x-auto">
         {isLoading ? (
           <div
             className="rounded-2xl border border-black/10 bg-slate-50 px-4 py-10 text-center text-sm text-slate-600"
@@ -429,6 +430,36 @@ export function DashboardLeadsTable({
             </button>
           </div>
         ) : (
+          <>
+          <ul className="md:hidden space-y-3" aria-label="Lead list">
+            {visibleLeads.map((lead) => {
+              const listPriority = getLeadListPriorityResult(lead, leadActivitiesByLeadId);
+              return (
+                <li key={lead.id}>
+                  <LeadPipelineMobileCard
+                    lead={lead}
+                    priorityScore={listPriority.score}
+                    priorityLevel={listPriority.priority}
+                    isPending={isPending}
+                    isConfirmingDelete={confirmDeleteLeadId === lead.id}
+                    onStatusChange={handleStatusChange}
+                    onUseInAi={(item) => {
+                      setConfirmDeleteLeadId(null);
+                      onUseLead?.(item);
+                    }}
+                    onRequestDelete={(leadId) => {
+                      setConfirmDeleteLeadId(leadId);
+                      setActionError(null);
+                    }}
+                    onCancelDelete={() => setConfirmDeleteLeadId(null)}
+                    onConfirmDelete={handleDeleteLead}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="hidden md:block overflow-x-auto">
           <table className="min-w-[720px] w-full text-left text-sm text-slate-700">
             <thead className="text-xs uppercase tracking-wide text-slate-500">
               <tr>
@@ -443,6 +474,7 @@ export function DashboardLeadsTable({
             <tbody>
               {visibleLeads.map((lead) => {
                 const listPriority = getLeadListPriorityResult(lead, leadActivitiesByLeadId);
+                const rowStatusId = `row-status-${lead.id}`;
                 return (
                 <tr key={lead.id} className="border-t border-black/10">
                   <td className="px-3 py-3 font-medium text-black">
@@ -456,14 +488,18 @@ export function DashboardLeadsTable({
                   <td className="px-3 py-3 text-slate-600">{lead.company}</td>
                   <td className="px-3 py-3 text-slate-600">{lead.email}</td>
                   <td className="px-3 py-3">
+                    <label htmlFor={rowStatusId} className="sr-only">
+                      Pipeline status for {lead.name}
+                    </label>
                     <select
+                      id={rowStatusId}
                       value={lead.status}
                       disabled={isPending}
                       onChange={(event) =>
                         handleStatusChange(lead.id, event.target.value as LeadStatus)
                       }
-                      aria-label={`Status for ${lead.name}`}
-                      className={`rounded-full border border-transparent px-2.5 py-1 text-xs font-medium outline-none ring-emerald-300/60 transition focus:ring disabled:opacity-60 ${leadStatusSelectClassName(lead.status)}`}
+                      aria-label={`Pipeline status for ${lead.name}, currently ${lead.status}`}
+                      className={`max-w-full rounded-xl border border-black/15 bg-white px-2.5 py-1.5 text-xs font-medium outline-none ring-emerald-300/60 transition focus:ring disabled:opacity-60 ${leadStatusSelectClassName(lead.status)}`}
                     >
                       <LeadStatusSelectOptions idPrefix={`row-${lead.id}`} />
                     </select>
@@ -539,6 +575,8 @@ export function DashboardLeadsTable({
               })}
             </tbody>
           </table>
+          </div>
+          </>
         )}
       </div>
     </Card>

@@ -31,8 +31,14 @@ export function LeadTimeline({ leadCreatedAt, activities }: LeadTimelineProps) {
   const events = buildLeadTimelineEvents(leadCreatedAt, activities);
 
   return (
-    <Card className="p-5">
-      <h2 className="text-lg font-medium text-black">Lead Timeline</h2>
+    <Card className="min-w-0 p-5 sm:p-6">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+        3 · History
+      </p>
+      <h2 className="mt-1 text-lg font-medium text-black">Lead timeline</h2>
+      <p className="mt-2 text-sm text-slate-600">
+        Chronological history of this lead—read-only context. Add or edit entries in Activity below.
+      </p>
       {activities.length === 0 ? (
         <p className="mt-2 text-sm text-slate-600">No additional activity yet.</p>
       ) : null}
@@ -63,7 +69,7 @@ export function LeadTimeline({ leadCreatedAt, activities }: LeadTimelineProps) {
                 </time>
                 <p className="mt-1 text-sm font-semibold text-black">{label}</p>
                 {event.type !== "lead_created" ? (
-                  <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-slate-800">
+                  <p className="mt-1 line-clamp-3 whitespace-pre-wrap break-words text-sm leading-6 text-slate-800">
                     {event.content}
                   </p>
                 ) : null}

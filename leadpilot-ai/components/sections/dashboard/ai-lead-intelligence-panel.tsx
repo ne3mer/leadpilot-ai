@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { Brain } from "lucide-react";
 import { AiGeneratedLabel } from "@/components/ui/ai-generated-label";
 import { Button } from "@/components/ui/button";
+import { SenderProfileAiCta } from "@/components/leads/sender-profile-ai-cta";
 import { Card } from "@/components/ui/card";
 import type { Lead } from "@/lib/lead-types";
 
 type AiLeadIntelligencePanelProps = {
   lead: Lead;
+  hasSenderProfile?: boolean;
 };
 
 type LeadIntelligence = {
@@ -51,7 +53,10 @@ function mapApiError(status: number, apiMessage: string | undefined): string {
   }
 }
 
-export function AiLeadIntelligencePanel({ lead }: AiLeadIntelligencePanelProps) {
+export function AiLeadIntelligencePanel({
+  lead,
+  hasSenderProfile = true,
+}: AiLeadIntelligencePanelProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [intelligence, setIntelligence] = useState<LeadIntelligence | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -129,16 +134,21 @@ export function AiLeadIntelligencePanel({ lead }: AiLeadIntelligencePanelProps) 
   }
 
   return (
-    <Card className="p-5">
-      <div className="flex flex-wrap items-center gap-2">
+    <Card className="min-w-0 p-5 sm:p-6">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+        5 · AI intelligence
+      </p>
+      <div className="mt-1 flex flex-wrap items-center gap-2">
         <Brain className="h-5 w-5 text-emerald-700" aria-hidden />
-        <h2 className="text-lg font-medium text-black">AI Lead Intelligence</h2>
+        <h2 className="text-lg font-medium text-black">AI lead intelligence</h2>
         <AiGeneratedLabel />
       </div>
 
       <p className="mt-2 text-sm text-slate-600">
-        On-demand guidance for {lead.name} based on verified lead data and pipeline status.
+        Broader context, approach, and recommended next step for {lead.name}—based on verified
+        lead data and pipeline status.
       </p>
+      <SenderProfileAiCta hasSenderProfile={hasSenderProfile} className="mt-2" />
 
       <div className="mt-4">
         <Button
@@ -170,7 +180,7 @@ export function AiLeadIntelligencePanel({ lead }: AiLeadIntelligencePanelProps) 
             </section>
             <section>
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Recommended Next Action
+                Recommended next step
               </h3>
               <p className="mt-1 text-sm font-medium leading-6 text-black">{intelligence.nextAction}</p>
             </section>

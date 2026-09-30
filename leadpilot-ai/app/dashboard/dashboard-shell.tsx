@@ -24,6 +24,7 @@ type DashboardShellProps = {
   priorityLeads: DashboardPriorityLeadItem[];
   priorityLeadsError?: string | null;
   leadActivitiesByLeadId: Record<string, LeadPriorityActivityInput[]>;
+  hasSenderProfile?: boolean;
   userLabel: string;
   leadsError?: string | null;
 };
@@ -37,6 +38,7 @@ export function DashboardShell({
   priorityLeads,
   priorityLeadsError,
   leadActivitiesByLeadId,
+  hasSenderProfile = true,
   userLabel,
   leadsError,
 }: DashboardShellProps) {
@@ -66,6 +68,7 @@ export function DashboardShell({
             <DashboardAiMessagePanel
               key={selectedLead?.id ?? "default-ai-message-panel"}
               selectedLead={selectedLead}
+              hasSenderProfile={hasSenderProfile}
             />
           </div>
         </div>

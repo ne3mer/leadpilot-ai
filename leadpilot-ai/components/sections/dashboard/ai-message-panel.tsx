@@ -11,6 +11,7 @@ import {
   type AiFollowUpTone,
 } from "@/lib/ai/constants";
 import { LeadStatusSelectOptions } from "@/components/leads/lead-status-select-options";
+import { SenderProfileAiCta } from "@/components/leads/sender-profile-ai-cta";
 import { AiGeneratedLabel } from "@/components/ui/ai-generated-label";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,6 +19,8 @@ import type { Lead, LeadStatus } from "@/lib/lead-types";
 
 type DashboardAiMessagePanelProps = {
   selectedLead?: Lead | null;
+  hasSenderProfile?: boolean;
+  workflowStep?: string;
 };
 
 type GeneratedFollowUp = {
@@ -59,7 +62,11 @@ function mapApiError(status: number, apiMessage: string | undefined): string {
   }
 }
 
-export function DashboardAiMessagePanel({ selectedLead }: DashboardAiMessagePanelProps) {
+export function DashboardAiMessagePanel({
+  selectedLead,
+  hasSenderProfile = true,
+  workflowStep,
+}: DashboardAiMessagePanelProps) {
   const [draftName, setDraftName] = useState("");
   const [draftCompany, setDraftCompany] = useState("");
   const [draftStatus, setDraftStatus] = useState<LeadStatus>("New");
@@ -196,16 +203,22 @@ export function DashboardAiMessagePanel({ selectedLead }: DashboardAiMessagePane
   const canGenerate = Boolean(selectedLead?.id) && !isGenerating;
 
   return (
-    <Card className="p-5">
-      <div className="flex flex-wrap items-center gap-2">
+    <Card className="min-w-0 p-5 sm:p-6">
+      {workflowStep ? (
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+          {workflowStep}
+        </p>
+      ) : null}
+      <div className={`flex flex-wrap items-center gap-2 ${workflowStep ? "mt-1" : ""}`}>
         <Sparkles className="h-5 w-5 text-emerald-700" aria-hidden />
-        <h2 className="text-lg font-medium text-black">AI Message Generator</h2>
+        <h2 className="text-lg font-medium text-black">AI message generator</h2>
         <AiGeneratedLabel variant="draft" />
       </div>
 
       <p className="mt-2 text-sm text-slate-600">
-        Generate a concise follow-up email draft for the selected lead using your tone and objective.
+        Draft a follow-up message when outreach is appropriate—using your tone and objective.
       </p>
+      <SenderProfileAiCta hasSenderProfile={hasSenderProfile} className="mt-2" />
 
       {selectedLead ? (
         <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
