@@ -2,6 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import { LeadDetailPanel } from "@/app/dashboard/leads/[id]/lead-detail-panel";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Container } from "@/components/ui/container";
+import type { LeadActivity } from "@/lib/activity-types";
+import { getActivitiesForLeadForCurrentUser } from "@/lib/activities/repository";
 import { getLeadByIdForCurrentUser } from "@/lib/leads/repository";
 import { createClient } from "@/lib/supabase/server";
 
@@ -34,11 +36,22 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
     notFound();
   }
 
+  let activities: LeadActivity[] = [];
+  try {
+    activities = await getActivitiesForLeadForCurrentUser(supabase, lead.id);
+  } catch {
+    notFound();
+  }
+
   return (
     <div className="min-h-screen bg-transparent text-slate-950">
       <SiteHeader sessionUser={{ email: user.email ?? "Signed in" }} />
       <Container className="py-8 sm:py-10">
-        <LeadDetailPanel key={`${lead.id}-${lead.updated_at}`} lead={lead} />
+        <LeadDetailPanel
+          key={`${lead.id}-${lead.updated_at}`}
+          lead={lead}
+          activities={activities}
+        />
       </Container>
     </div>
   );

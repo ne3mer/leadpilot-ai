@@ -1,8 +1,36 @@
+import type { LeadActivityType } from "@/lib/activity-types";
 import type { LeadStatus } from "@/lib/lead-types";
 
 export type Database = {
   public: {
     Tables: {
+      lead_activities: {
+        Row: {
+          id: string;
+          lead_id: string;
+          user_id: string;
+          type: LeadActivityType;
+          content: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          lead_id: string;
+          user_id: string;
+          type: LeadActivityType;
+          content: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          lead_id?: string;
+          user_id?: string;
+          type?: LeadActivityType;
+          content?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       leads: {
         Row: {
           id: string;

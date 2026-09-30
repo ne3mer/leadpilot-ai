@@ -12,12 +12,15 @@ import {
 } from "@/components/leads/lead-status-select-options";
 import { AiLeadIntelligencePanel } from "@/components/sections/dashboard/ai-lead-intelligence-panel";
 import { DashboardAiMessagePanel } from "@/components/sections/dashboard/ai-message-panel";
+import { LeadActivityPanel } from "@/components/sections/dashboard/lead-activity-panel";
+import type { LeadActivity } from "@/lib/activity-types";
 import { Card } from "@/components/ui/card";
 import { buttonClassName } from "@/components/ui/button";
 import type { Lead, LeadStatus } from "@/lib/lead-types";
 
 type LeadDetailPanelProps = {
   lead: Lead;
+  activities: LeadActivity[];
 };
 
 type FormState = {
@@ -36,7 +39,7 @@ function toFormState(lead: Lead): FormState {
   };
 }
 
-export function LeadDetailPanel({ lead }: LeadDetailPanelProps) {
+export function LeadDetailPanel({ lead, activities }: LeadDetailPanelProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<FormState>(() => toFormState(lead));
@@ -260,6 +263,8 @@ export function LeadDetailPanel({ lead }: LeadDetailPanelProps) {
           </dl>
         )}
       </Card>
+
+      <LeadActivityPanel leadId={lead.id} initialActivities={activities} />
 
       <AiLeadIntelligencePanel key={`intel-${lead.id}`} lead={lead} />
 
