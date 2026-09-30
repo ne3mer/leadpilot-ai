@@ -10,6 +10,8 @@ import {
   LeadStatusSelectOptions,
   leadStatusSelectClassName,
 } from "@/components/leads/lead-status-select-options";
+import { LeadPriorityInsight } from "@/components/leads/lead-priority-insight";
+import { LeadPrioritySummary } from "@/components/leads/lead-priority-summary";
 import { AiLeadIntelligencePanel } from "@/components/sections/dashboard/ai-lead-intelligence-panel";
 import { DashboardAiMessagePanel } from "@/components/sections/dashboard/ai-message-panel";
 import { LeadActivityPanel } from "@/components/sections/dashboard/lead-activity-panel";
@@ -17,11 +19,13 @@ import { LeadTimeline } from "@/components/sections/dashboard/lead-timeline";
 import type { LeadActivity } from "@/lib/activity-types";
 import { Card } from "@/components/ui/card";
 import { buttonClassName } from "@/components/ui/button";
+import type { LeadPriorityScoreResult } from "@/lib/leads/priority-types";
 import type { Lead, LeadStatus } from "@/lib/lead-types";
 
 type LeadDetailPanelProps = {
   lead: Lead;
   activities: LeadActivity[];
+  priorityResult: LeadPriorityScoreResult;
 };
 
 type FormState = {
@@ -40,7 +44,7 @@ function toFormState(lead: Lead): FormState {
   };
 }
 
-export function LeadDetailPanel({ lead, activities }: LeadDetailPanelProps) {
+export function LeadDetailPanel({ lead, activities, priorityResult }: LeadDetailPanelProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<FormState>(() => toFormState(lead));
@@ -263,6 +267,21 @@ export function LeadDetailPanel({ lead, activities }: LeadDetailPanelProps) {
             </div>
           </dl>
         )}
+      </Card>
+
+      <Card className="min-w-0 p-6 sm:p-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+          Lead priority
+        </p>
+        <p className="mt-2 text-sm text-slate-600">
+          Deterministic score from pipeline status and recorded activity (not AI-generated).
+        </p>
+        <div className="mt-5 min-w-0">
+          <LeadPrioritySummary priority={priorityResult} />
+        </div>
+        <div className="mt-6 min-w-0 border-t border-black/10 pt-5">
+          <LeadPriorityInsight leadId={lead.id} />
+        </div>
       </Card>
 
       <LeadTimeline leadCreatedAt={lead.created_at} activities={activities} />

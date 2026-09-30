@@ -11,14 +11,22 @@ import {
   updateLeadStatusAction,
 } from "@/lib/leads/actions";
 import { clearLegacyLocalLeads, readLegacyLocalLeads } from "@/lib/leads/local-storage";
+import { LeadPriorityBadge } from "@/components/leads/lead-priority-badge";
 import {
   applyLeadListView,
   defaultLeadSortPreset,
   formatLeadResultCount,
+  getLeadListPriorityResult,
   hasActiveLeadListFilters,
+  type LeadPriorityFilter,
   type LeadSortPreset,
   type LeadStatusFilter,
 } from "@/lib/leads/list-view";
+import {
+  leadPriorityFilterLabels,
+  leadPriorityFilterOptions,
+} from "@/lib/leads/priority-types";
+import type { LeadPriorityActivityInput } from "@/lib/leads/priority-score";
 import {
   LeadStatusSelectOptions,
   leadStatusSelectClassName,
@@ -28,6 +36,7 @@ import { leadStatuses, type Lead, type LeadStatus } from "@/lib/lead-types";
 
 type DashboardLeadsTableProps = {
   initialLeads: Lead[];
+  leadActivitiesByLeadId?: Record<string, LeadPriorityActivityInput[]>;
   loadError?: string | null;
   onUseLead?: (lead: Lead) => void;
 };
@@ -41,10 +50,13 @@ const sortPresetLabels: Record<LeadSortPreset, string> = {
   company_desc: "Company (Z–A)",
   status_asc: "Status (lifecycle)",
   status_desc: "Status (reverse lifecycle)",
+  priority_desc: "Priority (highest first)",
+  priority_asc: "Priority (lowest first)",
 };
 
 export function DashboardLeadsTable({
   initialLeads,
+  leadActivitiesByLeadId = {},
   loadError,
   onUseLead,
 }: DashboardLeadsTableProps) {
@@ -56,15 +68,19 @@ export function DashboardLeadsTable({
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<LeadStatusFilter>("all");
   const [sortPreset, setSortPreset] = useState<LeadSortPreset>(defaultLeadSortPreset);
+  const [priorityFilter, setPriorityFilter] = useState<LeadPriorityFilter>("all");
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const nameInputRef = useRef<HTMLInputElement>(null);
   const migrationAttemptedRef = useRef(false);
 
-  const filtersActive = hasActiveLeadListFilters(searchQuery, statusFilter);
+  const filtersActive = hasActiveLeadListFilters(searchQuery, statusFilter, priorityFilter);
 
-  const visibleLeads = applyLeadListView(initialLeads, searchQuery, statusFilter, sortPreset);
+  const visibleLeads = applyLeadListView(initialLeads, searchQuery, statusFilter, sortPreset, {
+    priorityFilter,
+    activitiesByLeadId: leadActivitiesByLeadId,
+  });
 
   const resultCountLabel = formatLeadResultCount(
     visibleLeads.length,
@@ -114,6 +130,7 @@ export function DashboardLeadsTable({
   function clearListFilters() {
     setSearchQuery("");
     setStatusFilter("all");
+    setPriorityFilter("all");
     setSortPreset(defaultLeadSortPreset);
   }
 
@@ -323,6 +340,23 @@ export function DashboardLeadsTable({
             </select>
           </label>
 
+          <label className="block w-full text-sm text-slate-700 lg:w-48">
+            Priority
+            <select
+              value={priorityFilter}
+              onChange={(event) =>
+                setPriorityFilter(event.target.value as LeadPriorityFilter)
+              }
+              className="mt-2 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none ring-emerald-400/40 transition focus:ring"
+            >
+              {leadPriorityFilterOptions.map((option) => (
+                <option key={option} value={option}>
+                  {leadPriorityFilterLabels[option]}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <label className="block w-full text-sm text-slate-700 lg:w-56">
             Sort
             <select
@@ -381,7 +415,7 @@ export function DashboardLeadsTable({
           <div className="rounded-2xl border border-dashed border-black/15 bg-slate-50 px-6 py-12 text-center">
             <h3 className="text-base font-semibold text-black">No leads match your current filters.</h3>
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
-              Try adjusting your search or status filter to see more leads.
+              Try adjusting your search, status, or priority filter to see more leads.
             </p>
             <button
               type="button"
@@ -392,18 +426,21 @@ export function DashboardLeadsTable({
             </button>
           </div>
         ) : (
-          <table className="min-w-[640px] w-full text-left text-sm text-slate-700">
+          <table className="min-w-[720px] w-full text-left text-sm text-slate-700">
             <thead className="text-xs uppercase tracking-wide text-slate-500">
               <tr>
                 <th className="px-3 py-3">Name</th>
                 <th className="px-3 py-3">Company</th>
                 <th className="px-3 py-3">Email</th>
                 <th className="px-3 py-3">Status</th>
+                <th className="px-3 py-3">Priority</th>
                 <th className="px-3 py-3 text-right">Action</th>
               </tr>
             </thead>
             <tbody>
-              {visibleLeads.map((lead) => (
+              {visibleLeads.map((lead) => {
+                const listPriority = getLeadListPriorityResult(lead, leadActivitiesByLeadId);
+                return (
                 <tr key={lead.id} className="border-t border-black/10">
                   <td className="px-3 py-3 font-medium text-black">
                     <Link
@@ -428,6 +465,12 @@ export function DashboardLeadsTable({
                       <LeadStatusSelectOptions idPrefix={`row-${lead.id}`} />
                     </select>
                   </td>
+                  <td className="px-3 py-3">
+                    <LeadPriorityBadge
+                      score={listPriority.score}
+                      priority={listPriority.priority}
+                    />
+                  </td>
                   <td className="px-3 py-3 text-right">
                     <div className="flex flex-wrap justify-end gap-2">
                       <button
@@ -450,7 +493,8 @@ export function DashboardLeadsTable({
                     </div>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         )}

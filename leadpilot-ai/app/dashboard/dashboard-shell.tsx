@@ -12,6 +12,7 @@ import { DashboardStatsOverview } from "@/components/sections/dashboard/stats-ov
 import type { LeadPerformanceTrendPoint } from "@/lib/leads/chart-data";
 import type { LeadDashboardMetrics } from "@/lib/leads/metrics";
 import type { DashboardPriorityLeadItem } from "@/lib/leads/priority-dashboard";
+import type { LeadPriorityActivityInput } from "@/lib/leads/priority-score";
 import type { Lead } from "@/lib/lead-types";
 
 type DashboardShellProps = {
@@ -22,6 +23,7 @@ type DashboardShellProps = {
   chartError?: string | null;
   priorityLeads: DashboardPriorityLeadItem[];
   priorityLeadsError?: string | null;
+  leadActivitiesByLeadId: Record<string, LeadPriorityActivityInput[]>;
   userLabel: string;
   leadsError?: string | null;
 };
@@ -34,6 +36,7 @@ export function DashboardShell({
   chartError,
   priorityLeads,
   priorityLeadsError,
+  leadActivitiesByLeadId,
   userLabel,
   leadsError,
 }: DashboardShellProps) {
@@ -62,6 +65,7 @@ export function DashboardShell({
 
         <DashboardLeadsTable
           initialLeads={initialLeads}
+          leadActivitiesByLeadId={leadActivitiesByLeadId}
           loadError={leadsError}
           onUseLead={setSelectedLead}
         />

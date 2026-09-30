@@ -7,10 +7,12 @@ import {
 } from "@/lib/leads/chart-data";
 import { computeLeadMetrics, type LeadDashboardMetrics } from "@/lib/leads/metrics";
 import {
+  activitiesByLeadIdToRecord,
   buildDashboardPriorityLeads,
   groupActivitiesByLeadId,
   type DashboardPriorityLeadItem,
 } from "@/lib/leads/priority-dashboard";
+import type { LeadPriorityActivityInput } from "@/lib/leads/priority-score";
 import { listLeadsForCurrentUser } from "@/lib/leads/repository";
 import type { Lead } from "@/lib/lead-types";
 import { createClient } from "@/lib/supabase/server";
@@ -35,6 +37,7 @@ export default async function DashboardPage() {
   let chartError: string | null = null;
   let priorityLeads: DashboardPriorityLeadItem[] = [];
   let priorityLeadsError: string | null = null;
+  let leadActivitiesByLeadId: Record<string, LeadPriorityActivityInput[]> = {};
 
   try {
     initialLeads = await listLeadsForCurrentUser(supabase);
@@ -52,6 +55,7 @@ export default async function DashboardPage() {
     try {
       const activities = await listActivitiesForCurrentUser(supabase);
       const activitiesByLeadId = groupActivitiesByLeadId(activities);
+      leadActivitiesByLeadId = activitiesByLeadIdToRecord(activitiesByLeadId);
       priorityLeads = buildDashboardPriorityLeads(initialLeads, activitiesByLeadId);
     } catch (error) {
       priorityLeadsError =
@@ -68,6 +72,7 @@ export default async function DashboardPage() {
       chartError={chartError}
       priorityLeads={priorityLeads}
       priorityLeadsError={priorityLeadsError}
+      leadActivitiesByLeadId={leadActivitiesByLeadId}
       userLabel={user.email ?? "Signed in"}
       leadsError={leadsError}
     />

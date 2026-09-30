@@ -4,6 +4,8 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { Container } from "@/components/ui/container";
 import type { LeadActivity } from "@/lib/activity-types";
 import { getActivitiesForLeadForCurrentUser } from "@/lib/activities/repository";
+import { computeLeadPriorityScore } from "@/lib/leads/priority-score";
+import type { LeadPriorityScoreResult } from "@/lib/leads/priority-types";
 import { getLeadByIdForCurrentUser } from "@/lib/leads/repository";
 import { createClient } from "@/lib/supabase/server";
 
@@ -43,6 +45,21 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
     notFound();
   }
 
+  const activityContext = activities.map((activity) => ({
+    type: activity.type,
+    content: activity.content,
+    created_at: activity.created_at,
+  }));
+
+  const priorityResult: LeadPriorityScoreResult = computeLeadPriorityScore(
+    {
+      status: lead.status,
+      created_at: lead.created_at,
+      updated_at: lead.updated_at,
+    },
+    activityContext
+  );
+
   return (
     <div className="min-h-screen bg-transparent text-slate-950">
       <SiteHeader sessionUser={{ email: user.email ?? "Signed in" }} />
@@ -51,6 +68,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
           key={`${lead.id}-${lead.updated_at}`}
           lead={lead}
           activities={activities}
+          priorityResult={priorityResult}
         />
       </Container>
     </div>

@@ -26,6 +26,12 @@ export type DashboardPriorityLeadItem = {
   updated_at: string;
 };
 
+export function activitiesByLeadIdToRecord(
+  map: Map<string, LeadPriorityActivityInput[]>
+): Record<string, LeadPriorityActivityInput[]> {
+  return Object.fromEntries(map.entries());
+}
+
 export function groupActivitiesByLeadId(
   activities: LeadActivity[]
 ): Map<string, LeadPriorityActivityInput[]> {
