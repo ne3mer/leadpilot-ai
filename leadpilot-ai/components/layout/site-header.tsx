@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useCallback, useEffect, useId, useState } from "react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { appNavLinks } from "@/lib/app-navigation";
 import { navLinks } from "@/lib/mock-data";
 import { buttonClassName } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
@@ -18,6 +19,8 @@ type SiteHeaderProps = {
 export function SiteHeader({ sessionUser }: SiteHeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const menuId = useId();
+  const isAuthenticated = Boolean(sessionUser);
+  const primaryLinks = isAuthenticated ? appNavLinks : navLinks;
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
@@ -44,12 +47,15 @@ export function SiteHeader({ sessionUser }: SiteHeaderProps) {
       className="sticky top-0 z-50 border-b border-black/10 bg-white/90 backdrop-blur"
     >
       <Container className="flex items-center justify-between gap-4 py-4">
-        <Link href="/" className="text-lg font-semibold tracking-tight text-black">
+        <Link
+          href={isAuthenticated ? "/dashboard" : "/"}
+          className="text-lg font-semibold tracking-tight text-black"
+        >
           LeadPilot AI
         </Link>
 
         <ul className="hidden items-center gap-6 text-sm text-slate-600 md:flex">
-          {navLinks.map((link) => (
+          {primaryLinks.map((link) => (
             <li key={link.label}>
               <Link href={link.href} className="transition hover:text-emerald-700">
                 {link.label}
@@ -61,12 +67,6 @@ export function SiteHeader({ sessionUser }: SiteHeaderProps) {
         <div className="flex items-center gap-2">
           {sessionUser ? (
             <>
-              <Link
-                href="/dashboard/settings/profile"
-                className="hidden text-sm font-medium text-slate-600 transition hover:text-emerald-700 sm:inline"
-              >
-                Profile
-              </Link>
               <span className="hidden max-w-[12rem] truncate text-xs font-medium text-slate-600 md:inline">
                 {sessionUser.email}
               </span>
@@ -109,18 +109,7 @@ export function SiteHeader({ sessionUser }: SiteHeaderProps) {
 
           <nav>
             <ul className="flex flex-col gap-1 text-sm text-slate-700">
-              {sessionUser ? (
-                <li>
-                  <Link
-                    href="/dashboard/settings/profile"
-                    className="block rounded-xl px-3 py-2.5 font-medium transition hover:bg-emerald-50 hover:text-emerald-800"
-                    onClick={closeMobile}
-                  >
-                    Sender Profile
-                  </Link>
-                </li>
-              ) : null}
-              {navLinks.map((link) => (
+              {primaryLinks.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}

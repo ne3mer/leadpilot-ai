@@ -82,7 +82,7 @@ export function SenderProfileForm({ initialProfile }: SenderProfileFormProps) {
       </Link>
 
       <Card className="p-6 sm:p-8">
-        <h1 className="text-2xl font-semibold text-black">Sender Profile</h1>
+        <h1 className="text-2xl font-semibold text-black">Profile</h1>
         <p className="mt-2 max-w-2xl text-sm text-slate-600">
           Tell LeadPilot who you are and how you want AI to represent your business.
         </p>

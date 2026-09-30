@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { resolveSafeRedirectPath } from "@/lib/auth/safe-redirect";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthActionState = {
@@ -40,7 +41,8 @@ export async function signInAction(
     return { error: error.message };
   }
 
-  redirect("/dashboard");
+  const nextPath = resolveSafeRedirectPath(String(formData.get("next") ?? ""));
+  redirect(nextPath ?? "/dashboard");
 }
 
 export async function signUpAction(

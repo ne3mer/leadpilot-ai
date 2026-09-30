@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Brain } from "lucide-react";
+import { AiGeneratedLabel } from "@/components/ui/ai-generated-label";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { Lead } from "@/lib/lead-types";
@@ -129,9 +130,10 @@ export function AiLeadIntelligencePanel({ lead }: AiLeadIntelligencePanelProps) 
 
   return (
     <Card className="p-5">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Brain className="h-5 w-5 text-emerald-700" aria-hidden />
         <h2 className="text-lg font-medium text-black">AI Lead Intelligence</h2>
+        <AiGeneratedLabel />
       </div>
 
       <p className="mt-2 text-sm text-slate-600">
@@ -161,6 +163,7 @@ export function AiLeadIntelligencePanel({ lead }: AiLeadIntelligencePanelProps) 
           <p className="text-sm text-slate-600">Analyzing lead context…</p>
         ) : intelligence ? (
           <>
+            <AiGeneratedLabel className="mb-1" />
             <section>
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Summary</h3>
               <p className="mt-1 text-sm leading-6 text-slate-800">{intelligence.summary}</p>

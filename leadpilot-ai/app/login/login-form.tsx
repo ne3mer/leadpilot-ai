@@ -1,15 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useActionState, useState } from "react";
 import { Lock } from "lucide-react";
 import { signInAction, signUpAction, type AuthActionState } from "@/lib/auth/actions";
+import { resolveSafeRedirectPath } from "@/lib/auth/safe-redirect";
 import { Card } from "@/components/ui/card";
 import { buttonClassName } from "@/components/ui/button";
 
 const initialState: AuthActionState = {};
 
 export function LoginForm() {
+  const searchParams = useSearchParams();
+  const safeNext = resolveSafeRedirectPath(searchParams.get("next"));
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [signInState, signInFormAction, signInPending] = useActionState(signInAction, initialState);
   const [signUpState, signUpFormAction, signUpPending] = useActionState(signUpAction, initialState);
@@ -56,6 +60,9 @@ export function LoginForm() {
       </div>
 
       <form action={formAction} className="mt-8 space-y-4">
+        {mode === "sign-in" && safeNext ? (
+          <input type="hidden" name="next" value={safeNext} readOnly />
+        ) : null}
         <label className="block text-sm text-slate-700">
           Email
           <input

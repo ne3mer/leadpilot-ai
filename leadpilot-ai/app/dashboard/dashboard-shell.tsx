@@ -51,24 +51,24 @@ export function DashboardShell({
 
         <DashboardPriorityLeads items={priorityLeads} error={priorityLeadsError} />
 
-        <div className="grid gap-6 lg:grid-cols-5">
-          <div className="lg:col-span-3">
-            <DashboardPerformanceChart data={performanceTrend} error={chartError} />
-          </div>
-          <div className="lg:col-span-2">
-            <DashboardAiMessagePanel
-              key={selectedLead?.id ?? "default-ai-message-panel"}
-              selectedLead={selectedLead}
-            />
-          </div>
-        </div>
-
         <DashboardLeadsTable
           initialLeads={initialLeads}
           leadActivitiesByLeadId={leadActivitiesByLeadId}
           loadError={leadsError}
           onUseLead={setSelectedLead}
         />
+
+        <div className="grid min-w-0 gap-6 lg:grid-cols-5">
+          <div className="min-w-0 lg:col-span-3">
+            <DashboardPerformanceChart data={performanceTrend} error={chartError} />
+          </div>
+          <div className="min-w-0 lg:col-span-2">
+            <DashboardAiMessagePanel
+              key={selectedLead?.id ?? "default-ai-message-panel"}
+              selectedLead={selectedLead}
+            />
+          </div>
+        </div>
       </Container>
     </div>
   );

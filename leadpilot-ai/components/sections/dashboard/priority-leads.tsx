@@ -16,7 +16,7 @@ type DashboardPriorityLeadsProps = {
 function PriorityLeadRow({ item }: { item: DashboardPriorityLeadItem }) {
   return (
     <li className="min-w-0 py-4 first:pt-0 last:pb-0">
-      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
             <Link
@@ -49,19 +49,18 @@ function PriorityLeadRow({ item }: { item: DashboardPriorityLeadItem }) {
           ) : (
             <p className="mt-2 text-sm text-slate-500">No additional priority signals yet.</p>
           )}
-
-          <div className="mt-3 min-w-0">
-            <LeadPriorityInsight leadId={item.id} compact />
-          </div>
         </div>
 
-        <Link
-          href={`/dashboard/leads/${item.id}`}
-          className="inline-flex shrink-0 min-w-0 items-center justify-center gap-1 self-start rounded-xl border border-transparent px-3 py-2 text-sm font-medium text-emerald-700 hover:underline sm:pt-1"
-        >
-          View lead
-          <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden />
-        </Link>
+        <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
+          <Link
+            href={`/dashboard/leads/${item.id}`}
+            className="inline-flex min-w-0 items-center justify-center gap-1 rounded-xl border border-transparent px-3 py-2 text-sm font-medium text-emerald-700 hover:underline"
+          >
+            View lead
+            <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden />
+          </Link>
+          <LeadPriorityInsight leadId={item.id} compact dashboardRow />
+        </div>
       </div>
     </li>
   );

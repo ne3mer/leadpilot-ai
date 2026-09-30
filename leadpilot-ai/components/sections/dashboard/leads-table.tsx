@@ -69,6 +69,7 @@ export function DashboardLeadsTable({
   const [statusFilter, setStatusFilter] = useState<LeadStatusFilter>("all");
   const [sortPreset, setSortPreset] = useState<LeadSortPreset>(defaultLeadSortPreset);
   const [priorityFilter, setPriorityFilter] = useState<LeadPriorityFilter>("all");
+  const [confirmDeleteLeadId, setConfirmDeleteLeadId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -179,6 +180,7 @@ export function DashboardLeadsTable({
         return;
       }
 
+      setConfirmDeleteLeadId(null);
       setActionMessage("Lead deleted.");
       router.refresh();
     });
@@ -212,7 +214,8 @@ export function DashboardLeadsTable({
   const isLoading = isPending && initialLeads.length === 0 && !loadError;
 
   return (
-    <Card className="p-5">
+    <section id="pipeline" className="min-w-0 scroll-mt-24" aria-label="Lead Pipeline">
+    <Card className="min-w-0 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-medium text-black">Lead Pipeline</h2>
@@ -472,25 +475,64 @@ export function DashboardLeadsTable({
                     />
                   </td>
                   <td className="px-3 py-3 text-right">
-                    <div className="flex flex-wrap justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => onUseLead?.(lead)}
-                        className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
+                    {confirmDeleteLeadId === lead.id ? (
+                      <div
+                        className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-left"
+                        role="alertdialog"
+                        aria-labelledby={`delete-lead-${lead.id}`}
                       >
-                        <WandSparkles className="h-3.5 w-3.5" />
-                        Use in AI
-                      </button>
-                      <button
-                        type="button"
-                        disabled={isPending}
-                        onClick={() => handleDeleteLead(lead.id)}
-                        className="inline-flex items-center gap-1 rounded-lg border border-black/15 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700 disabled:opacity-60"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        Delete
-                      </button>
-                    </div>
+                        <p
+                          id={`delete-lead-${lead.id}`}
+                          className="text-xs text-red-900"
+                        >
+                          Delete {lead.name}? This cannot be undone.
+                        </p>
+                        <div className="mt-2 flex flex-wrap justify-end gap-2">
+                          <button
+                            type="button"
+                            disabled={isPending}
+                            onClick={() => handleDeleteLead(lead.id)}
+                            className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                          >
+                            {isPending ? "Deleting…" : "Confirm delete"}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isPending}
+                            onClick={() => setConfirmDeleteLeadId(null)}
+                            className="rounded-lg border border-black/15 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-60"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setConfirmDeleteLeadId(null);
+                            onUseLead?.(lead);
+                          }}
+                          className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
+                        >
+                          <WandSparkles className="h-3.5 w-3.5" />
+                          Use in AI
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => {
+                            setConfirmDeleteLeadId(lead.id);
+                            setActionError(null);
+                          }}
+                          className="inline-flex items-center gap-1 rounded-lg border border-black/15 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700 disabled:opacity-60"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          Delete
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               );
@@ -500,5 +542,6 @@ export function DashboardLeadsTable({
         )}
       </div>
     </Card>
+    </section>
   );
 }

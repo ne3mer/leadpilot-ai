@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
+import { AiGeneratedLabel } from "@/components/ui/ai-generated-label";
 import { Button } from "@/components/ui/button";
 import {
   isLeadPriorityExplanation,
@@ -12,9 +13,15 @@ import {
 type LeadPriorityInsightProps = {
   leadId: string;
   compact?: boolean;
+  /** Compact dashboard row: no helper text, smaller AI result block */
+  dashboardRow?: boolean;
 };
 
-export function LeadPriorityInsight({ leadId, compact = false }: LeadPriorityInsightProps) {
+export function LeadPriorityInsight({
+  leadId,
+  compact = false,
+  dashboardRow = false,
+}: LeadPriorityInsightProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [insight, setInsight] = useState<LeadPriorityExplanation | null>(null);
   const [insightError, setInsightError] = useState<string | null>(null);
@@ -88,6 +95,8 @@ export function LeadPriorityInsight({ leadId, compact = false }: LeadPriorityIns
       ? "Refresh AI priority insight"
       : "Generate AI priority insight";
 
+  const showHelper = !dashboardRow && !isLoading && !insight && !insightError;
+
   return (
     <div className="min-w-0">
       <Button
@@ -97,7 +106,7 @@ export function LeadPriorityInsight({ leadId, compact = false }: LeadPriorityIns
         onClick={handleExplain}
         aria-busy={isLoading}
         aria-label={buttonLabel}
-        className={`min-w-0 gap-1.5 rounded-xl text-sm ${compact ? "px-3 py-2" : "px-4 py-2.5"}`}
+        className={`min-w-0 gap-1.5 rounded-xl text-sm ${compact || dashboardRow ? "px-3 py-2" : "px-4 py-2.5"}`}
       >
         <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden />
         {isLoading ? "Loading…" : insight ? "Refresh insight" : "AI insight"}
@@ -109,7 +118,7 @@ export function LeadPriorityInsight({ leadId, compact = false }: LeadPriorityIns
         </p>
       ) : null}
 
-      {!isLoading && !insight && !insightError ? (
+      {showHelper ? (
         <p className="mt-2 text-sm text-slate-500">
           Optional: generate an AI explanation of why this lead deserves attention.
         </p>
@@ -117,9 +126,10 @@ export function LeadPriorityInsight({ leadId, compact = false }: LeadPriorityIns
 
       {insight ? (
         <div
-          className="mt-3 min-w-0 space-y-2 rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-2.5 text-sm text-slate-700"
+          className={`mt-2 min-w-0 space-y-2 rounded-lg border border-violet-100 bg-violet-50/50 text-slate-700 ${dashboardRow ? "px-2.5 py-2 text-xs" : "rounded-xl border-emerald-100 bg-emerald-50/60 px-3 py-2.5 text-sm"}`}
           aria-live="polite"
         >
+          <AiGeneratedLabel className="mb-1" />
           <p className="break-words">
             <span className="font-medium text-slate-900">Why: </span>
             {insight.explanation}

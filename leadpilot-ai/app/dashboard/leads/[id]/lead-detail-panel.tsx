@@ -280,6 +280,7 @@ export function LeadDetailPanel({ lead, activities, priorityResult }: LeadDetail
           <LeadPrioritySummary priority={priorityResult} />
         </div>
         <div className="mt-6 min-w-0 border-t border-black/10 pt-5">
+          <p className="mb-3 text-sm font-medium text-slate-800">AI priority insight</p>
           <LeadPriorityInsight leadId={lead.id} />
         </div>
       </Card>

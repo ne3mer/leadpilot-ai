@@ -11,6 +11,7 @@ import {
   type AiFollowUpTone,
 } from "@/lib/ai/constants";
 import { LeadStatusSelectOptions } from "@/components/leads/lead-status-select-options";
+import { AiGeneratedLabel } from "@/components/ui/ai-generated-label";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { Lead, LeadStatus } from "@/lib/lead-types";
@@ -196,9 +197,10 @@ export function DashboardAiMessagePanel({ selectedLead }: DashboardAiMessagePane
 
   return (
     <Card className="p-5">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Sparkles className="h-5 w-5 text-emerald-700" aria-hidden />
         <h2 className="text-lg font-medium text-black">AI Message Generator</h2>
+        <AiGeneratedLabel variant="draft" />
       </div>
 
       <p className="mt-2 text-sm text-slate-600">
@@ -320,9 +322,12 @@ export function DashboardAiMessagePanel({ selectedLead }: DashboardAiMessagePane
         ) : generated ? (
           <div className="space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Email draft for this lead
-              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Email draft for this lead
+                </p>
+                <AiGeneratedLabel variant="draft" />
+              </div>
               <Button
                 type="button"
                 variant="secondary"
