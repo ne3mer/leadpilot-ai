@@ -10,6 +10,7 @@ import {
   LeadStatusSelectOptions,
   leadStatusSelectClassName,
 } from "@/components/leads/lead-status-select-options";
+import { AiLeadIntelligencePanel } from "@/components/sections/dashboard/ai-lead-intelligence-panel";
 import { DashboardAiMessagePanel } from "@/components/sections/dashboard/ai-message-panel";
 import { Card } from "@/components/ui/card";
 import { buttonClassName } from "@/components/ui/button";
@@ -259,6 +260,8 @@ export function LeadDetailPanel({ lead }: LeadDetailPanelProps) {
           </dl>
         )}
       </Card>
+
+      <AiLeadIntelligencePanel key={`intel-${lead.id}`} lead={lead} />
 
       <DashboardAiMessagePanel key={`ai-${lead.id}`} selectedLead={lead} />
     </div>
